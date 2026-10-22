@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}Apply for a Loan{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3"><i class="bi bi-pencil-square"></i> Apply for a loan</h1>
+
+{% if has_active_loan %}
+  <div class="alert alert-warning">
+    <i class="bi bi-info-circle"></i>
+    {{ errors.get("form") or "You already have an active loan. You can apply again once it is closed, rejected or cancelled." }}
+    <a href="{{ url_for('borrower.loans') }}" class="alert-link">View my loans</a>
+  </div>
+{% else %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Interest rate <strong>{{ "%g"|format(settings.interest_rate) }}% per year</strong> &middot;
+          Amount {{ settings.min_amount|inr }} – {{ settings.max_amount|inr }} &middot;
+          Tenure {{ settings.min_tenure }} – {{ settings.max_tenure }} months &middot;
+          EMI up to {{ "%g"|format(settings.max_emi_to_income) }}% of your income
+        </p>
+
+        {# data-* values are read by static/js/main.js for the live EMI preview #}
+        <form method="post" enctype="multipart/form-data" novalidate id="apply-form"
+              data-rate="{{ settings.interest_rate }}" data-max-pct="{{ settings.max_emi_to_income }}"
+              data-income="{{ current_user.monthly_income or 0 }}"
+              data-min-amount="{{ settings.min_amount }}" data-max-amount="{{ settings.max_amount }}"
+              data-min-tenure="{{ settings.min_tenure }}" data-max-tenure="{{ settings.max_tenure }}">
+          {{ m.csrf_field() }}
+          <div class="row">
+            <div class="col-sm-6">
+              {{ m.input_field("amount", "Loan amount (₹)", values, errors, type="number",
+                               min=settings.min_amount, max=settings.max_amount, step="any") }}
+            </div>
+            <div class="col-sm-6">
+              {{ m.input_field("tenure_months", "Tenure (months)", values, errors, type="number",
+                               min=settings.min_tenure, max=settings.max_tenure, step=1) }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="purpose" class="form-label">Purpose <span class="text-danger">*</span></label>
+            <textarea id="purpose" name="purpose" rows="2" maxlength="200" required
+                      class="form-control{% if errors.get('purpose') %} is-invalid{% endif %}">{{ values.get("purpose", "") }}</textarea>
+            {% if errors.get("purpose") %}<div class="invalid-feedback">{{ errors.purpose }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label for="document" class="form-label">Supporting document <span class="text-danger">*</span></label>
+            <input type="file" id="document" name="document" accept=".pdf,.jpg,.jpeg,.png" required
+                   class="form-control{% if errors.get('document') %} is-invalid{% endif %}">
+            <div class="form-text">PDF, JPG or PNG, max 2 MB (e.g. salary slip or ID proof).</div>
+            {% if errors.get("document") %}<div class="invalid-feedback">{{ errors.document }}</div>{% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Submit application</button>
+          <a href="{{ url_for('borrower.dashboard') }}" class="btn btn-link">Back</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-primary">
+      <div class="card-header bg-primary text-white"><i class="bi bi-calculator"></i> EMI preview</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-6">Monthly EMI</dt><dd class="col-6 fs-5 fw-semibold" id="preview-emi">-</dd>
+          <dt class="col-6">Total payable</dt><dd class="col-6" id="preview-total">-</dd>
+          <dt class="col-6">Total interest</dt><dd class="col-6" id="preview-interest">-</dd>
+          <dt class="col-6">Your EMI limit</dt><dd class="col-6" id="preview-limit">-</dd>
+        </dl>
+        <div id="preview-message" class="small mt-2 text-muted">Enter an amount and tenure to see your EMI.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

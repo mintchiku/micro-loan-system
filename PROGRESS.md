@@ -9,7 +9,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 1. Skeleton | Done |
 | 2. Auth | Done |
 | 3. Seed (users) | Done |
-| 4. Apply | Not started |
+| 4. Apply | Done |
 | 5. Officer | Not started |
 | 6. Repay | Not started |
 | 7. Admin + full seed | Not started |
@@ -158,3 +158,46 @@ Then log in as `officer@test.com` / `admin@test.com` with password `Test@1234`.
 ### Decisions
 - Borrower incomes: Aman ₹45,000, Sneha ₹60,000, Rohan ₹30,000, Kavya ₹80,000.
 - seed.py does not touch `uploads/` (never delete uploads); old files there simply become unused.
+
+---
+
+## Phase 4 — Loan application (borrower side)
+
+### Plan
+- `app/services/emi.py`: `calculate_emi`, `max_affordable_amount` (EMI formula solved for P),
+  `add_months` (month-end safe), `build_schedule` (last installment absorbs rounding), self-test
+- `app/services/loan_service.py`: `ALLOWED_TRANSITIONS`, `LoanError`, `change_status`,
+  `get_settings`, `get_active_loan`, `check_document`, `check_affordability`, `check_application`,
+  `apply_for_loan` (rate locked, uuid file name, one commit + rollback), `cancel_loan`
+- `app/utils/formatters.py`: `inr` (₹1,00,000.00) and `format_date` (22 Oct 2026) filters
+- `app/routes/borrower.py`: dashboard, apply, loans, loan detail, cancel (+ ownership helper)
+- `app/routes/main.py`: `/documents/<id>` (owner / officer / admin)
+- `app/__init__.py`: register filters, 413 handler for oversized uploads
+- Templates: `borrower/dashboard|apply|loans|loan_detail.html`, `status_badge` macro, navbar links
+- `app/static/js/main.js`: live EMI preview (same formula), limit + affordability hints
+
+### Verified
+- `python app/services/emi.py`: EMI 4442.44; 0 % → 1000.0; 31 Jan + 1 month → 28 Feb;
+  schedule total = EMI × 12 exactly.
+- JS preview checked with Node: EMI 4442.44, max affordable 28,137 (same as Python).
+- Test client, 52/52 checks: amount < ₹5,000 / > ₹1,00,000 blocked; tenure 2, 25, 12.5 blocked;
+  purpose required; .exe, empty, missing and 2.5 MB files rejected with field errors; > 3 MB
+  request handled by the 413 handler; EMI over 50 % of income blocked with "you can borrow at most
+  ₹28,137.00"; valid ₹50,000 / 12 m saved as Applied with EMI 4442.44, 12 %, uuid file name in
+  `uploads/`; second application blocked and the form is replaced by a message; cancel works only
+  while Applied; another borrower gets 404 on the loan page, its document and its cancel URL;
+  officer and admin can open the document; uploads are not reachable under `/static`;
+  changing the rate to 14 % leaves the existing loan at 12 %.
+- Live server: `/`, `/login`, `/static/js/main.js` → 200, no server errors.
+
+### Decisions
+- Borrowers get **404** (not 403) for another borrower's loan or document, so they cannot
+  learn that it exists.
+- The document is required (see Phase 0, question 6). The original file name is cleaned with
+  `secure_filename` before it is stored.
+- If the database save fails after the file was written, that file is removed again (rollback).
+- The affordability message caps the "max affordable amount" at the settings maximum and says
+  so if it falls below the minimum amount.
+- A request over 3 MB is cut off by Flask (413) and the user is sent back to the form with a
+  message. Note: with the Werkzeug development server some browsers show "connection reset"
+  for very large files instead of the message; files up to 3 MB always get the normal field error.

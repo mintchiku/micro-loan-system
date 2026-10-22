@@ -1,7 +1,46 @@
 {% extends "base.html" %}
+{% import "macros.html" as m %}
 {% block title %}Borrower Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="h3">Welcome, {{ current_user.name }}</h1>
-<p class="text-muted">Borrower dashboard</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <h1 class="h3 mb-0">Welcome, {{ current_user.name }}</h1>
+  {% if active_loan %}
+    {# Rule 3: one active loan at a time #}
+    <button class="btn btn-primary" disabled title="You already have an active loan">
+      <i class="bi bi-plus-lg"></i> Apply for loan</button>
+  {% else %}
+    <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Apply for loan</a>
+  {% endif %}
+</div>
+
+{% if active_loan %}
+{% set next_due = active_loan.next_due_installment() %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Active loan <strong>{{ active_loan.display_id() }}</strong></span>
+    {{ m.status_badge(active_loan.status) }}
+  </div>
+  <div class="card-body">
+    <div class="row text-center g-3">
+      <div class="col-6 col-md-3"><div class="text-muted small">Amount</div><div class="fs-5">{{ active_loan.amount|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Monthly EMI</div><div class="fs-5">{{ active_loan.emi_amount|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Next due date</div>
+        <div class="fs-5">{{ next_due.due_date|date if next_due else "-" }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="fs-5">{{ active_loan.outstanding()|inr }}</div></div>
+    </div>
+  </div>
+  <div class="card-footer bg-white">
+    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-outline-primary btn-sm">View details</a>
+  </div>
+</div>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white mb-4">
+  <i class="bi bi-cash-stack display-4"></i>
+  <p class="mt-2">You have no active loan right now.</p>
+  <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary">Apply for a loan</a>
+</div>
+{% endif %}
+
+<a href="{{ url_for('borrower.loans') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-wallet2"></i> See all my loans</a>
 {% endblock %}

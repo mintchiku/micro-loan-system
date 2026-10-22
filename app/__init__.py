@@ -39,6 +39,12 @@ def create_app(config_class=Config):
     app.register_blueprint(officer_bp, url_prefix="/officer")
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
+    # Jinja filters: {{ loan.amount|inr }} and {{ loan.applied_on|date }}
+    from app.utils.formatters import format_date, inr
+
+    app.jinja_env.filters["inr"] = inr
+    app.jinja_env.filters["date"] = format_date
+
     register_csrf(app)
     register_error_handlers(app)
 
@@ -82,6 +88,12 @@ def register_error_handlers(app):
     def not_found(error):
         """Page or record does not exist (or is not yours)."""
         return render_template("errors/404.html"), 404
+
+    @app.errorhandler(413)
+    def too_large(error):
+        """Upload bigger than MAX_CONTENT_LENGTH: go back to the form with a message."""
+        flash("The file is too large. The maximum size is 2 MB.", "danger")
+        return redirect(request.url)
 
     @app.errorhandler(500)
     def server_error(error):

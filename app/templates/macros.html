@@ -16,6 +16,16 @@
 </div>
 {% endmacro %}
 
+{# Coloured badge for a loan status; the same colours are used everywhere (CLAUDE.md §9) #}
+{% macro status_badge(status) %}
+{% set colors = {
+  "Applied": "secondary", "Under Review": "info", "Approved": "primary", "Rejected": "danger",
+  "Cancelled": "dark", "Disbursed": "warning", "Repaying": "warning", "Closed": "success",
+  "Overdue": "danger", "Paid": "success", "Pending": "secondary"
+} %}
+<span class="badge text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+{% endmacro %}
+
 {# Hidden CSRF field; put inside every POST form #}
 {% macro csrf_field() %}
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
