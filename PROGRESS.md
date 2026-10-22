@@ -564,7 +564,7 @@ All checks ran on temporary data; the live `instance/microloan.db`, `uploads/` a
   the phone screen; the other 13 pages measured exactly 390 px. Cause: a Bootstrap `.visually-hidden` label inside the scrolling table is
   absolutely positioned and escapes the `.table-responsive` wrapper. Suggested one-line fix: `position: relative` on `.table-responsive`
   in `style.css`. It is documented as a known limitation (SRS NFR-15 and section 9, technical document 17.2) and waits for your go-ahead.
-- The handoff gist still contains your local folder path (`C:\Users\utsav\...`); there is no email or account name in any document.
+- The handoff gist contained your local folder path; it was replaced by "the project folder" in the follow-up commit. There is no email or account name in any document.
 - The SRS refers to test modules that Part 4 creates (`tests/test_auth.py`, `test_rules.py`, `test_emi.py`, `test_uploads.py`,
   `test_state_machine.py`, `test_officer_flow.py`, `test_reassignment.py`, `test_repayment.py`, `test_admin.py`, `test_reports.py`,
   `test_permissions.py`, `test_security.py`, `test_ui.py`, `test_performance.py`, `test_architecture.py`, `test_seed.py`, `test_demo_flow.py`).
@@ -650,3 +650,26 @@ All checks ran on temporary data; the live `instance/microloan.db`, `uploads/` a
 - **The live database `instance/microloan.db` and `uploads/` were not opened, read or changed in any part of this session**; `seed.py` was never run on them.
 - **Reseed before the demo?** Yes, on the day of the demo (`python seed.py`, answer `y`), because the seed dates are relative to the day it runs (the
   "one overdue installment" state only holds that day) and the live database still holds extra test data (your own account and LN-0008); the reseed deletes them.
+
+---
+
+## Follow-up: phone overflow, icon a11y, income decimals (approved by the owner)
+
+### What changed
+- `style.css`: `position: relative` on `.table-responsive`, so Bootstrap's absolutely positioned `.visually-hidden` labels inside table cells are clipped by the
+  scroll box instead of widening the page (Officer dashboard was 594 px, My loans 655 px at a 390 px screen).
+- `base.html`: `aria-hidden="true"` on the shield icon of the utility bar; the matching test is a normal test again (the expected-failure marker is gone).
+- `validators.validate_user_form`: monthly income with more than 2 decimals is refused with "Use at most 2 decimal places." (same `has_too_many_decimals` as the
+  amounts); the create-officer form has no income field and is unaffected.
+- `PROJECT_HANDOFF_GIST.md`: the Windows folder path is replaced by "the project folder" (and `<the project folder>` inside commands). No path, email or account name is left in any project text file.
+- Documents updated to the new state: README (known-issues section removed), CLAUDE.md (income note), gist, SRS (FR-02, NFR-14, NFR-15, section 9), `docs/README.md`,
+  `docs/03_wireframes_and_prototype.md`, technical document (limitations, slide 23, 16.5, 17.4, upload feature text). Two older statements that were stale since Part 2
+  (gist security summary, technical document F14: "SameSite not set / file content not inspected") were corrected too.
+
+### Verified
+- **390 px check (headless Edge, temporary-database server on port 5001, stopped afterwards):** Officer dashboard and My loans now have document width = viewport = 390 px
+  (before: 594 and 655). The 13 logged-in table or form pages that were measured are all exactly 390 px. Two screenshots were taken (the officer one replaces
+  `docs/prototype/07_officer_dashboard_phone.png`); the tables scroll inside their own card.
+- New tests: 7 for income decimals (`test_auth.py`), 1 that guards the CSS rule (`test_ui.py`); the icon test is a normal test.
+- **Full suite: 1,379 passed, 0 expected failures, 66 seconds.**
+- Live database, `uploads/` and port 5000 were not touched.

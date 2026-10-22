@@ -135,6 +135,8 @@ def validate_user_form(form, with_income=True):
         income = to_float(values["monthly_income"])
         if income is None or income <= 0:
             errors["monthly_income"] = "Monthly income must be a number greater than 0."
+        elif has_too_many_decimals(values["monthly_income"]):  # income is money too: at most 2 decimals
+            errors["monthly_income"] = DECIMALS_MESSAGE
 
     has_letter = any(ch.isalpha() for ch in password)
     has_digit = any(ch.isdigit() for ch in password)

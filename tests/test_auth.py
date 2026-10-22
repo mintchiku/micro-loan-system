@@ -60,6 +60,19 @@ def test_registration_field_errors(app, anon, field, value, message):
     assert user_count(app, email="test@example.com") == 0
 
 
+@pytest.mark.parametrize("income, ok", [
+    ("80000", True), ("80000.5", True), ("80000.99", True), ("80000.990", True),
+    ("80000.999", False), ("1234.567", False), ("0.001", False),
+])
+def test_monthly_income_has_at_most_two_decimal_places(app, anon, income, ok):
+    response = post(anon, "/register", register_data(monthly_income=income))
+    assert (response.status_code == 302) is ok
+    if not ok:
+        html = text(response)
+        assert "Use at most 2 decimal places." in html and f'value="{income}"' in html, "same message as the amounts; typed value kept"
+    assert user_count(app, email="test@example.com") == (1 if ok else 0)
+
+
 def test_passwords_must_match(anon):
     assert "Passwords do not match." in text(post(anon, "/register", register_data(confirm_password="Different1")))
 

@@ -533,7 +533,7 @@ The screenshots in `docs/prototype/` were taken from the running application, no
 
 ### What the screenshots show about responsiveness (NFR-15)
 
-At 390 px the step tracker runs top to bottom and each schedule row becomes a two-line card, so Pay is always visible; the navigation collapses into one menu button. **Two pages do not fully meet NFR-15:** the **Officer dashboard** and the borrower's **My loans** list make the page about 200 to 265 px wider than the phone screen at 390 px (the browser then widens the layout), so the last columns of their tables are cut off until the table is swiped. The cause is a visually hidden label (Bootstrap's `.visually-hidden`, which is absolutely positioned) inside the scrolling table; it escapes the table wrapper and widens the page. This was found while taking the screenshots; it is **not fixed** because it was outside the agreed changes, and it is listed in the SRS as a known limitation. The fix is one CSS line (`position: relative` on `.table-responsive`).
+At 390 px the step tracker runs top to bottom and each schedule row becomes a two-line card, so Pay is always visible; the navigation collapses into one menu button. Tables scroll inside their own card instead of widening the page. The first set of screenshots showed that the **Officer dashboard** (594 px) and the borrower's **My loans** (655 px) were wider than the phone screen, because a visually hidden label inside the scrolling table is absolutely positioned and escaped the table wrapper; `position: relative` on `.table-responsive` fixed it, and the 13 table and form pages that were measured again are exactly 390 px wide.
 
 ---
 

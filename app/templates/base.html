@@ -22,7 +22,7 @@
 {# Thin strip above the header: demo notice on the left, who is signed in on the right #}
 <div class="utility-bar">
   <div class="container">
-    <span><i class="bi bi-shield-check"></i> Demo environment &middot; payments are simulated</span>
+    <span><i class="bi bi-shield-check" aria-hidden="true"></i> Demo environment &middot; payments are simulated</span>
     {% if current_user.is_authenticated %}
       <span>Signed in as <strong>{{ current_user.name }}</strong></span>
     {% elif ep != 'auth.register' %}

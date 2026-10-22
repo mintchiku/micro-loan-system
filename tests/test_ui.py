@@ -126,9 +126,6 @@ def test_every_page_has_a_language_and_a_title(request, who, url):
     assert '<html lang="en">' in html and re.search(r"<title>[^<]+ \| MicroLoan</title>", html)
 
 
-@pytest.mark.xfail(strict=True, reason="Known gap (found while writing these tests): the shield icon in the utility bar of base.html has no "
-                                       "aria-hidden=\"true\"; CLAUDE.md section 9a says all icons are hidden. One attribute fixes it. "
-                                       "Remove this marker when it is fixed.")
 def test_decorative_icons_are_hidden_from_screen_readers(request):
     missing = []
     for who, url in PAGES:
@@ -284,6 +281,14 @@ def test_the_design_tokens_are_in_the_stylesheet(anon):
 ])
 def test_text_colours_meet_wcag_aa(foreground, background):
     assert contrast(foreground, background) >= 4.5
+
+
+def test_the_table_wrapper_clips_hidden_labels_so_phones_do_not_scroll_sideways(anon):
+    """Bootstrap's .visually-hidden labels in table cells are absolutely positioned; without position: relative on
+    .table-responsive they escape the scroll box and widen the whole page (the Officer dashboard and My loans at 390 px)."""
+    css = text(anon.get("/static/css/style.css"))
+    rule = re.search(r"\.table-responsive \{([^}]*)\}", css)
+    assert rule and "position: relative" in rule.group(1)
 
 
 def test_static_files_are_served(anon):

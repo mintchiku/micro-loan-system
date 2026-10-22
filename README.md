@@ -112,17 +112,8 @@ pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-The suite has about 1,370 tests and takes about a minute. To run one area only, for example the state machine:
-`python -m pytest tests/test_state_machine.py`. One test is marked as an expected failure on purpose: it records a known
-accessibility gap (see `tests/test_ui.py`) and will turn into an error once the gap is fixed.
-
-## Known issues
-
-Found while writing the documents and tests; documented, not fixed (each is a one-line change that waits for the owner's go-ahead):
-
-- The Officer dashboard and the borrower's My loans page are wider than a 390 px phone screen, so the last table columns are cut off until swiped
-  (suggested fix: `position: relative` on `.table-responsive` in `app/static/css/style.css`).
-- The shield icon in the utility bar of `base.html` has no `aria-hidden="true"` (recorded by an expected-failure test in `tests/test_ui.py`).
+The suite has about 1,380 tests and takes about a minute. To run one area only, for example the state machine:
+`python -m pytest tests/test_state_machine.py`.
 
 ## Design
 

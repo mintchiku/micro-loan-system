@@ -156,7 +156,7 @@ Use these exact names; the class diagram and CRC cards are drawn from them.
 | phone | str(10) | 10 digits |
 | password_hash | str(256) | never store plain password |
 | role | str(20) | `borrower` / `officer` / `admin` |
-| monthly_income | float, nullable | required for borrowers |
+| monthly_income | float, nullable | required for borrowers; at most 2 decimals |
 | is_active | bool | default True |
 | created_at | datetime | default now |
 

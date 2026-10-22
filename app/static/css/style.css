@@ -176,7 +176,9 @@ dl.facts > div:last-child { border-bottom: 0; }
 dl.facts dt { color: var(--ml-muted); font-weight: 400; }
 dl.facts dd { margin: 0; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
 
-.table-responsive { background: #fff; border: 1px solid var(--ml-border); border-radius: var(--ml-radius-lg); }
+/* position: relative makes the wrapper clip absolutely positioned children (Bootstrap's .visually-hidden labels in the cells);
+   without it they escaped the scroll box and made the whole page wider than a phone screen */
+.table-responsive { position: relative; background: #fff; border: 1px solid var(--ml-border); border-radius: var(--ml-radius-lg); }
 .table { margin-bottom: 0; --bs-table-bg: transparent; --bs-table-hover-bg: var(--ml-blue-50); }
 .table > thead > tr > th { background: var(--ml-blue-50); color: var(--ml-blue-800); font-weight: 700; border-bottom: 0; white-space: nowrap; }
 .table > :not(caption) > * > * { padding: 0.85rem 1rem; }

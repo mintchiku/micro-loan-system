@@ -32,9 +32,9 @@ server-rendered (no JSON API, no JS framework). It was built in 8 phases, audite
 | URL | **http://127.0.0.1:5000** |
 | Reachable from | **Only the owner's own Windows PC**, while the server is running. `127.0.0.1` means "this computer"; it is **not** a public link and a cloud-hosted Claude thread cannot open it |
 | Server status when this was written | Running (HTTP 200 on `/login`), started in the background by Claude Code with `venv\Scripts\python.exe run.py` (Flask dev server, `debug=True`, auto-reloads on code changes). It stops when that session or the terminal ends |
-| Start it yourself | `cd C:\Users\utsav\Desktop\Projects\micro-loan-system` then `.\venv\Scripts\Activate.ps1` then `python run.py` |
+| Start it yourself | `cd <the project folder>` then `.\venv\Scripts\Activate.ps1` then `python run.py` |
 | Needs internet | Yes, for Bootstrap, Bootstrap Icons and Chart.js (CDN). Without internet the pages are unstyled |
-| Project folder | `C:\Users\utsav\Desktop\Projects\micro-loan-system` |
+| Project folder | the project folder |
 
 A Claude thread can inspect the site only if it runs **on that machine** (for example Claude Code in VS Code on the same PC)
 or has a browser tool connected to that PC. Otherwise it can only read the source files and this document.
@@ -305,13 +305,13 @@ A private design canvas (the visual spec made before the code): **https://claude
 
 ## 10. Security summary
 
-Passwords: salted scrypt hash. CSRF: random per-session token on every POST form, checked for every POST. Role checks on every protected route plus ownership checks (404) plus the state machine re-check. XSS: Jinja auto-escape (a `<script>` in a field renders as text). SQL: ORM only. Uploads: extension whitelist, 2 MB, uuid name, outside `static/`, protected route. Login ignores `?next=`. **Known gaps:** no rate limiting, no HTTPS, session cookie `SameSite` not set, upload content not scanned, dev server with `debug=True`.
+Passwords: salted scrypt hash. CSRF: random per-session token on every POST form, checked for every POST. Role checks on every protected route plus ownership checks (404) plus the state machine re-check. XSS: Jinja auto-escape (a `<script>` in a field renders as text). SQL: ORM only. Uploads: extension whitelist, 2 MB, uuid name, outside `static/`, protected route. Login ignores `?next=`. Session cookie: `SameSite=Lax` and `HttpOnly`; uploads are also checked by their first bytes. **Known gaps:** no rate limiting, no HTTPS, dev server with `debug=True`.
 
 ---
 
 ## 11. Verification status (be honest about it)
 
-- **Automated tests: yes.** `tests/` holds **1,371 pytest tests in 17 modules** (1,370 pass, 1 is a documented known gap marked as an expected failure; about 65 seconds). Run `pip install -r requirements-dev.txt` then `python -m pytest`. Every test uses a temporary copy of a freshly seeded database and a temporary upload folder, never `instance/microloan.db` or `uploads/`. They cover the EMI maths, all 384 (from, to, actor) status combinations, every route against every role, rules R1 to R11, CSRF on all 11 POST routes, rollback when a commit fails and every fix of the first audit. A mutation check on a copy of the project broke the app in 14 ways and the suite caught all 14. Not tested automatically: the browser JavaScript and the layout (screenshots).
+- **Automated tests: yes.** `tests/` holds **1,379 pytest tests in 17 modules** (all pass; about 65 seconds). Run `pip install -r requirements-dev.txt` then `python -m pytest`. Every test uses a temporary copy of a freshly seeded database and a temporary upload folder, never `instance/microloan.db` or `uploads/`. They cover the EMI maths, all 384 (from, to, actor) status combinations, every route against every role, rules R1 to R11, CSRF on all 11 POST routes, rollback when a commit fails and every fix of the first audit. A mutation check on a copy of the project broke the app in 14 ways and the suite caught all 14. Not tested automatically: the browser JavaScript and the layout (screenshots).
 - **Visual check:** 16 pages at 1360px and 4 at 390px were screenshotted with headless Edge and reviewed; two phone bugs were found and fixed (tracker overflow, clipped Pay button).
 - The 32 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0 (the 28 diagrams of `docs/` too).
 - `python app/services/emi.py` is a small extra self-test of the EMI maths.
@@ -325,13 +325,11 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 5. ~~Session cookie `SameSite` is not set.~~ **Fixed:** `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` in `config.py`.
 6. ~~`GET /logout` changes state.~~ **Fixed:** logout is POST only, with the CSRF token.
 
-### 11.2 Open findings of session 2 (found while documenting and testing; **not fixed**, waiting for the owner's go-ahead)
+### 11.2 Findings of session 2 (found while documenting and testing; all fixed in the follow-up commit)
 
-1. **Two pages are wider than a 390 px phone screen:** the Officer dashboard (594 px) and the borrower's My loans (655 px). A visually hidden label inside the
-   scrolling table is absolutely positioned and escapes the `.table-responsive` wrapper. Suggested fix: `position: relative` on `.table-responsive` in `style.css`.
-2. **One icon lacks `aria-hidden="true"`:** the shield icon in the utility bar of `base.html`. A strict expected-failure test in `tests/test_ui.py` records it
-   and will flag itself when the attribute is added.
-3. Monthly income is not checked for more than 2 decimals (only the loan amount and the amount limits are).
+1. ~~Two pages were wider than a 390 px phone screen~~ (Officer dashboard 594 px, My loans 655 px). **Fixed:** `position: relative` on `.table-responsive` in `style.css`; 13 pages measured at 390 px are exactly 390 px wide (the tables scroll inside their own card).
+2. ~~One icon lacked `aria-hidden="true"`~~ (the shield in the utility bar of `base.html`). **Fixed;** its test is a normal test now.
+3. ~~Monthly income was not checked for more than 2 decimals.~~ **Fixed:** the register form uses the same `has_too_many_decimals` check as the amounts.
 
 ---
 
@@ -345,7 +343,7 @@ admin (`/admin/reports` for the charts). Resize to about 390px to see the phone 
 ### 12.2 With the Flask test client (no server needed; use a **temporary** database)
 
 ```powershell
-cd C:\Users\utsav\Desktop\Projects\micro-loan-system
+cd <the project folder>
 $env:PYTHONIOENCODING = "utf-8"      # the console cannot print the rupee sign otherwise
 @'
 import sys, os, tempfile
@@ -371,7 +369,7 @@ print(c.get("/borrower/dashboard").status_code, "Overdue" in html)
 
 ### 12.2b Run the automated tests
 
-`pip install -r requirements-dev.txt`, then `python -m pytest` (about a minute, **1,371 tests**: 1,370 pass and 1 is an expected failure). The tests use a
+`pip install -r requirements-dev.txt`, then `python -m pytest` (about a minute, **1,379 tests**, all passing). The tests use a
 temporary database and upload folder and never touch `instance/microloan.db`. Run them before and after any change.
 
 ### 12.3 With curl (against the live server; read-only)
@@ -400,7 +398,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
   - `cbf1386` Fix apply button state on My loans and report percentage rounding
   - `25474f0` Add technical documentation and handoff gist
   - `0bde9f4` UI redesign: yellow and blue theme
-  The last commit of the session (a documentation consistency pass) comes after the ones listed here; see `git log`.
+  The follow-up commit "Fix phone overflow, icon a11y, income decimals" comes after the ones listed here; see `git log`.
 - **Untracked:** only the tooling items `.agents/` and `skills-lock.json` (not part of the app, not created by the app code).
 - `.gitignore`: `venv/`, `instance/`, `uploads/`, `.env`, `__pycache__/`, `PROMPTS.md`, `.claude/`.
 - `.claude/settings.json` registers a Claude Code plugin ("ponytail": a "simplest solution" mode) for this workspace; it is tooling, git-ignored.
@@ -443,7 +441,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (31-slide plan, 32 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).
 5. Whether to ever deploy (the blueprint says local only; deployment is out of scope).
 6. Decide what to do with the extra demo data (the owner's own borrower account and LN-0008) the next time `seed.py` is run.
-7. Say yes or no to the three open findings of section 11.2 (two are one-line fixes).
+7. ~~Say yes or no to the three open findings of section 11.2.~~ Approved and fixed in the follow-up commit.
 8. **Reseed before the demo?** Yes, on the day of the demo (`python seed.py`, answer `y`): the seed dates are relative to the day it runs, so the
    "one overdue installment" state only holds on the day you seed, and the live database still holds the extra test data of item 6.
    Do it only if you do not need that extra data; the reseed deletes it.
@@ -452,7 +450,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 
 ## 17. Starter message to paste into the new Claude thread
 
-> I'm continuing a Flask project in `C:\Users\utsav\Desktop\Projects\micro-loan-system` (MicroLoan: borrowers apply for small loans,
+> I'm continuing a Flask project in the project folder (MicroLoan: borrowers apply for small loans,
 > officers review/disburse, admins manage settings and reports; yellow-and-blue theme). Please read `PROJECT_HANDOFF_GIST.md` first,
 > then `CLAUDE.md` (my rules: one task at a time, plan first, no new libraries/pages without asking, simple commented code, never delete the
 > DB except via seed.py, Windows PowerShell). The site runs at http://127.0.0.1:5000 when you start it with `python run.py` from the activated

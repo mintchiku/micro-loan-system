@@ -967,10 +967,10 @@ whenever a page is built: red solid **Overdue** badge and red row in schedules, 
 
 | Item | Detail |
 |---|---|
-| Upload | Part of F6. Checks: file chosen; extension in `.pdf .jpg .jpeg .png`; not empty; at most 2 MB (`MAX_DOCUMENT_BYTES`). The stored name is `uuid4().hex` plus the extension; the display name is cleaned with `secure_filename` |
+| Upload | Part of F6. Checks: file chosen; extension in `.pdf .jpg .jpeg .png`; not empty; at most 2 MB (`MAX_DOCUMENT_BYTES`); the first bytes must match the type (`%PDF`, PNG or JPEG signature, `detect_file_type`), so a text file renamed `.pdf` is refused. The stored name is `uuid4().hex` plus the extension; the display name is cleaned with `secure_filename` |
 | Storage | `uploads/` folder, **outside** `static/`, so there is no public URL |
 | Viewing | `GET /documents/<id>` (`main.view_document`, `main.py:22`), allowed for borrowers, officers and admins. A borrower who is not the owner gets 404. The file is sent with `send_from_directory(UPLOAD_FOLDER, stored_name, download_name=original_name)` |
-| Not done | The file content is not inspected (type is judged by the extension only) **[Verified]** |
+| Not done | The file is not scanned for viruses or for a valid internal structure; only its first bytes are compared with the type **[Verified]** |
 
 ### F15. Admin: users and officers
 
@@ -2835,15 +2835,15 @@ accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wirefr
 
 ### Slide 23. Testing and results
 
-- **Bullets:** A pytest suite in `tests/`: **1,371 tests** in 17 modules (1370 pass, 1 known gap marked as an expected failure), about 65 seconds on a temporary database. It tries all **384** (from, to, actor) status combinations (397 tests in that module), 108 route-by-role checks, rules R1 to R11, CSRF on all 11 POST routes, and a failed commit for every service function. A mutation check: 14 of 14 deliberate breakages were caught. Earlier build-time checks (27, 52, 43, 29, 90, 61, 89, 146) are included.
+- **Bullets:** A pytest suite in `tests/`: **1,379 tests** in 17 modules (all pass), about 65 seconds on a temporary database. It tries all **384** (from, to, actor) status combinations (397 tests in that module), 108 route-by-role checks, rules R1 to R11, CSRF on all 11 POST routes, and a failed commit for every service function. A mutation check: 14 of 14 deliberate breakages were caught. Earlier build-time checks (27, 52, 43, 29, 90, 61, 89, 146) are included.
 - **Visual:** the module table of section 16.5, plus the transition test summary.
 - **Concepts:** *Black-box testing through HTTP*; *exhaustive transition testing*; *mutation check*.
-- **Speaker notes:** Run `python -m pytest` live (it takes about a minute). Be open about what is not tested automatically: the browser JavaScript and the visual layout (checked by screenshots), and mention the one known gap shown as an expected failure and the two pages wider than a 390 px phone screen found during the screenshots.
+- **Speaker notes:** Run `python -m pytest` live (it takes about a minute). Be open about what is not tested automatically: the browser JavaScript and the visual layout (checked by screenshots).
 - **Source:** `tests/`; `PROGRESS.md`; section 16 of this document.
 
 ### Slide 24. Advantages and limitations
 
-- **Bullets (advantages):** all rules in one place; impossible status moves; automatic schedule; clear UI; no heavy dependencies. **(Limitations):** local only; float money; no email, no password reset, no pagination, no rate limiting; two pages wider than a phone screen; needs internet for CDN files.
+- **Bullets (advantages):** all rules in one place; impossible status moves; automatic schedule; clear UI; no heavy dependencies. **(Limitations):** local only; float money; no email, no password reset, no pagination, no rate limiting; needs internet for CDN files.
 - **Visual:** two columns.
 - **Concepts:** *Trade-offs*.
 - **Speaker notes:** Limitations that are deliberate (out of scope) versus missing: separate them.
@@ -2880,7 +2880,7 @@ accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wirefr
 
 | Item | Status |
 |---|---|
-| Automated test suite (pytest) | **Yes.** `tests/` holds **1,371 tests in 17 modules**: 1370 pass and 1 is a documented known gap marked as an expected failure. Run it with `pip install -r requirements-dev.txt` and `python -m pytest` (pytest is a development-only dependency, not in `requirements.txt`) **[Verified: run on 23 Oct 2026, about 65 seconds]** |
+| Automated test suite (pytest) | **Yes.** `tests/` holds **1,379 tests in 17 modules**, all passing. Run it with `pip install -r requirements-dev.txt` and `python -m pytest` (pytest is a development-only dependency, not in `requirements.txt`) **[Verified: run on 23 Oct 2026, about 65 seconds]** |
 | Safety of the tests | Every test builds the app on a temporary copy of a freshly seeded database with a temporary upload folder; a fixture refuses to run against `instance/microloan.db` or `uploads/` **[Verified by reading `tests/conftest.py`]** |
 | Do the tests catch mistakes? | A mutation check on a **copy** of the project broke the application in 14 deliberate ways (for example a forbidden status move allowed, CSRF switched off, upload content not checked, logout accepting GET) and the suite caught all 14 **[Verified]** |
 | Self-test of the EMI maths | **Yes.** `python app/services/emi.py` prints the EMI for ₹50,000, 12%, 12 months (expected 4442.44), a 0% case, the month-end rule and the schedule total (`emi.py:51-62`) |
@@ -2931,13 +2931,13 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 |---|--:|---|
 | `test_emi.py` | 239 | EMI formula, rounding, affordability, month ends, schedule totals to the paisa (FR-15, FR-34, NFR-13) |
 | `test_state_machine.py` | 397 | all 384 (from, to, actor) combinations, the 7 transitions, rule R11, a full lifecycle (FR-29, NFR-09) |
-| `test_ui.py` | 119 | apply button states, one yellow action per page, badges, money and date formats, confirm dialogs, empty states, menus, contrast (FR-21, FR-39, FR-53 to FR-55, NFR-08, NFR-14) |
+| `test_ui.py` | 120 | apply button states, one yellow action per page, badges, money and date formats, confirm dialogs, empty states, menus, contrast (FR-21, FR-39, FR-53 to FR-55, NFR-08, NFR-14) |
 | `test_permissions.py` | 108 | every route against every role, ownership, wrong HTTP methods (FR-08, FR-09, FR-33, NFR-02, NFR-03) |
 | `test_security.py` | 73 | CSRF on all 11 POST routes, rollback when a commit fails, 500/404 pages, XSS escaping, hostile search text (FR-56, NFR-04, NFR-10) |
 | `test_rules.py` | 58 | R1 to R4 and R6 through the apply form (FR-10 to FR-18, FR-44) |
 | `test_officer_flow.py` | 57 | list, filter, search, detail, pick up, approve, reject, disburse, dashboard (FR-22 to FR-28, FR-47) |
 | `test_admin.py` | 56 | users list and search, activate and deactivate, create officer, settings validation (FR-40 to FR-45) |
-| `test_auth.py` | 51 | register, login, logout as POST, duplicate emails, deactivation, password hashing, cookie flags (FR-01 to FR-07, NFR-01, NFR-06) |
+| `test_auth.py` | 58 | register, login, logout as POST, duplicate emails, deactivation, password hashing, cookie flags (FR-01 to FR-07, NFR-01, NFR-06) |
 | `test_reassignment.py` | 43 | admin reassignment, who may do it, the form, the deactivation warning (FR-30 to FR-32) |
 | `test_uploads.py` | 38 | file type, content, size, safe storage, protected viewing (FR-17, FR-52, NFR-05) |
 | `test_architecture.py` | 36 | no commits or status changes in routes, docstrings, libraries, secrets (NFR-11) |
@@ -2946,13 +2946,12 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | `test_seed.py` | 21 | the demo accounts, loans in every status, one overdue installment (FR-45, FR-57) |
 | `test_reports.py` | 21 | totals, shares that add up to 100.0, bar chart months, overdue table (FR-48 to FR-51) |
 | `test_demo_flow.py` | 4 | the demo script of CLAUDE.md section 13, end to end, plus close, cancel and reject journeys |
-| **Total** | **1,371** | 1370 pass, 1 expected failure (a documented known gap) |
+| **Total** | **1,379** | all pass |
 
 **How it is built.** `tests/conftest.py` seeds one database per session with the functions of `seed.py` and gives every test its own copy, its own upload folder and a logged-in client for each demo role (the session is set directly, which keeps the suite fast; the real login route is tested in `test_auth.py`). Business rules are tested through the pages (what a user sees) and through the service functions (what the database holds).
 
 **Not covered by automated tests (checked by hand):** the browser JavaScript (the live EMI preview and the charts), the visual layout (screenshots in `docs/prototype/`), the width of the pages on a phone, truly simultaneous requests, and any deployment.
 
-**Known gap kept visible:** one test (`test_decorative_icons_are_hidden_from_screen_readers`) is marked as an expected failure because the shield icon in the utility bar of `base.html` lacks `aria-hidden="true"`; it turns into an error as soon as the attribute is added, as a reminder to remove the marker.
 
 ---
 
@@ -2984,12 +2983,9 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | SQLite foreign keys not enforced | No `PRAGMA foreign_keys=ON` in the code |
 | "One document per loan" is a code rule, not a database constraint | `Document.loan_id` is not unique |
 | No history of status changes | Only the current status, `officer_id`, `reviewed_on`, `remarks` and dates are stored; there is no audit table |
-| Monthly income may have more than 2 decimals | Only the loan amount and the amount limits are checked for 2 decimals |
 | No rate limiting or account lockout | Not in the code |
 | No pagination | Lists load all matching rows |
-| One decorative icon is not hidden from screen readers | The shield icon in the utility bar of `base.html` has no `aria-hidden="true"`; a strict expected-failure test records it (one attribute fixes it) |
 | The tests do not run the browser | The JavaScript (live EMI preview, charts) and the visual layout are checked by hand and with screenshots (section 16.5) |
-| Two pages are wider than a 390 px phone screen | The Officer dashboard (594 px) and My loans (655 px): a visually hidden label inside the scrolling table is absolutely positioned and widens the page. Found while taking the prototype screenshots; not fixed (one CSS line would fix it) |
 | Tested on Windows only | Portability to Mac and Linux is claimed in the blueprint but was **Not Verified** |
 
 ### 17.3 Future enhancements (all **Suggested**, none implemented)
@@ -3009,7 +3005,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 
 ### 17.4 Issues fixed after the first audit
 
-The final audit of the build found six small issues (and the review of the live site two more). All are fixed and have
+The final audit of the build found six small issues (the review of the live site two more, and the prototype and test work three more). All are fixed and have
 automated checks in `tests/` (see section 16):
 
 | Issue | Fix |
@@ -3022,6 +3018,9 @@ automated checks in `tests/` (see section 16):
 | `GET /logout` changed state | Logout is POST only with the CSRF token |
 | My loans Apply button looked enabled but led to a blocked page | One shared `apply_button` macro: disabled with the same helper text as the dashboard |
 | Pie chart table shares did not add up to 100 % | `percent_shares`: one decimal, the largest status takes the rounding |
+| Officer dashboard (594 px) and My loans (655 px) wider than a 390 px phone | `position: relative` on `.table-responsive`, so hidden labels in table cells are clipped by the scroll box |
+| Shield icon in the utility bar not hidden from screen readers | `aria-hidden="true"` added; the test is a normal test again |
+| Monthly income accepted more than 2 decimals | The register form uses `has_too_many_decimals`, like the amounts |
 
 ---
 
@@ -3155,7 +3154,7 @@ reset, email or rate limiting; no history table of status changes. Several are
 out of scope by design (see `CLAUDE.md` section 1).
 
 **20. How did you test it?**
-A pytest suite in `tests/` (1,371 tests) runs on a temporary database with the Flask test client. It tries all 384 state-transition
+A pytest suite in `tests/` (1,379 tests) runs on a temporary database with the Flask test client. It tries all 384 state-transition
 combinations, every route against every role, the business rules R1 to R11, CSRF on all 11 POST routes and a failed commit for every
 service function. A mutation check showed that it catches 14 of 14 deliberate breakages. The layout and the browser JavaScript are
 checked by hand with screenshots.
