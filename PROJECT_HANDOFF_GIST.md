@@ -17,8 +17,9 @@
 default, 3 to 24 months) with one document, and repay it in monthly installments. **Loan officers** pick up, approve or
 reject, and disburse applications (disbursal auto-creates the EMI schedule). **Admins** manage users, create officers,
 edit loan limits and the interest rate, and view totals and charts. Payments are **simulated** (a Pay button). It is
-server-rendered (no JSON API, no JS framework). It has been built in 8 phases, audited, and then re-skinned with a
-**yellow-and-blue theme** (the redesign is **uncommitted**).
+server-rendered (no JSON API, no JS framework). It was built in 8 phases, audited, and re-skinned with a
+**yellow-and-blue theme**. In a second session the audit issues were fixed, the SE documents were written (`docs/`) and a
+**pytest suite** was added. **Everything is committed.**
 
 ---
 
@@ -103,7 +104,7 @@ see the **Apply form** use a borrower with no active loan: **Sneha is blocked (L
 `requirements.txt` has exactly four packages: Flask, Flask-SQLAlchemy, Flask-Login, python-dotenv. **Do not add libraries
 without asking** (owner rule).
 
-Size: about 1,400 lines of Python in 18 files, 20 templates (about 1,700 lines), about 400 lines of CSS, about 100 lines of JS.
+Size: about 1,560 lines of Python in 18 files (plus about 3,300 lines of tests in `tests/`), 20 templates (about 1,740 lines), 386 lines of CSS, 99 lines of JS.
 22 HTTP routes, 5 tables, 3 roles, 8 loan statuses.
 
 ---
@@ -315,7 +316,7 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 - The 32 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0 (the 28 diagrams of `docs/` too).
 - `python app/services/emi.py` is a small extra self-test of the EMI maths.
 
-### 11.1 Known issues found in the final audit (all six fixed in session 2, Part 2)
+### 11.1 Issues found in the final audit (all six fixed in session 2, Part 2)
 
 1. ~~Amounts with more than 2 decimals are accepted.~~ **Fixed:** apply form and loan settings reject them ("Use at most 2 decimal places.").
 2. ~~Uploaded files are checked by extension and size only.~~ **Fixed:** the first bytes must match PDF / PNG / JPEG (`check_document`).
@@ -323,6 +324,14 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 4. ~~Two simultaneous sign-ups with the same email could show the 500 page.~~ **Fixed:** `create_user` catches `IntegrityError` and returns the same form error.
 5. ~~Session cookie `SameSite` is not set.~~ **Fixed:** `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` in `config.py`.
 6. ~~`GET /logout` changes state.~~ **Fixed:** logout is POST only, with the CSRF token.
+
+### 11.2 Open findings of session 2 (found while documenting and testing; **not fixed**, waiting for the owner's go-ahead)
+
+1. **Two pages are wider than a 390 px phone screen:** the Officer dashboard (594 px) and the borrower's My loans (655 px). A visually hidden label inside the
+   scrolling table is absolutely positioned and escapes the `.table-responsive` wrapper. Suggested fix: `position: relative` on `.table-responsive` in `style.css`.
+2. **One icon lacks `aria-hidden="true"`:** the shield icon in the utility bar of `base.html`. A strict expected-failure test in `tests/test_ui.py` records it
+   and will flag itself when the attribute is added.
+3. Monthly income is not checked for more than 2 decimals (only the loan amount and the amount limits are).
 
 ---
 
@@ -360,6 +369,11 @@ print(c.get("/borrower/dashboard").status_code, "Overdue" in html)
 '@ | .\venv\Scripts\python.exe -
 ```
 
+### 12.2b Run the automated tests
+
+`pip install -r requirements-dev.txt`, then `python -m pytest` (about a minute, **1,371 tests**: 1,370 pass and 1 is an expected failure). The tests use a
+temporary database and upload folder and never touch `instance/microloan.db`. Run them before and after any change.
+
 ### 12.3 With curl (against the live server; read-only)
 
 ```bash
@@ -378,9 +392,16 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 
 ## 13. Git and repository state
 
-- **9 commits** on `main`, one per phase (`a8e8af6` Phase 1 to `051bbbc` Phase 9). Commit messages end with a `Co-Authored-By` line for the current Claude model.
-- **Uncommitted:** 31 modified files = the whole yellow-and-blue redesign (CSS, base/macros/all templates, a few routes/services: `main.index` passes settings and a sample loan, `officer.application_detail` passes settings, `inr_short` filter, new pie colours, `main.js` busy state), **plus** the CLAUDE.md section 9a, README "Design" section and PROGRESS entry. Suggested message: `UI redesign: yellow and blue theme`.
-- **Untracked:** `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md`, `PROJECT_HANDOFF_GIST.md`, and tooling items `.agents/` and `skills-lock.json` (not part of the app, not created by the app code).
+- **Everything is committed** on `main`. Commit messages end with a `Co-Authored-By` line for the Claude model that wrote them.
+- The nine phase commits (`a8e8af6` Phase 1 to `051bbbc` Phase 9) are followed by the session-2 commits (newest first):
+  - `3a1a7ae` Add pytest test suite
+  - `38c0ab6` Add SE documentation: SRS, diagrams, CRC, swimlanes, wireframes, prototype
+  - `d2ef845` Fix audit issues: decimals, upload check, officer reassignment, logout, cookies
+  - `cbf1386` Fix apply button state on My loans and report percentage rounding
+  - `25474f0` Add technical documentation and handoff gist
+  - `0bde9f4` UI redesign: yellow and blue theme
+  The last commit of the session (a documentation consistency pass) comes after the ones listed here; see `git log`.
+- **Untracked:** only the tooling items `.agents/` and `skills-lock.json` (not part of the app, not created by the app code).
 - `.gitignore`: `venv/`, `instance/`, `uploads/`, `.env`, `__pycache__/`, `PROMPTS.md`, `.claude/`.
 - `.claude/settings.json` registers a Claude Code plugin ("ponytail": a "simplest solution" mode) for this workspace; it is tooling, git-ignored.
 
@@ -417,11 +438,15 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 ## 16. Open items and decisions waiting for the owner
 
 1. ~~Which of the six known issues (11.1) to fix.~~ All six are fixed (session 2, Part 2).
-2. **Commit** the redesign (31 files) and the two documentation files? (Nothing has been committed since Phase 9.)
+2. ~~Commit the redesign and the documentation.~~ Done: everything is committed.
 3. ~~Move the test scripts into the repo as `tests/` (pytest).~~ Done in session 2, Part 4 (`python -m pytest`).
 4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (31-slide plan, 32 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).
 5. Whether to ever deploy (the blueprint says local only; deployment is out of scope).
 6. Decide what to do with the extra demo data (the owner's own borrower account and LN-0008) the next time `seed.py` is run.
+7. Say yes or no to the three open findings of section 11.2 (two are one-line fixes).
+8. **Reseed before the demo?** Yes, on the day of the demo (`python seed.py`, answer `y`): the seed dates are relative to the day it runs, so the
+   "one overdue installment" state only holds on the day you seed, and the live database still holds the extra test data of item 6.
+   Do it only if you do not need that extra data; the reseed deletes it.
 
 ---
 
@@ -432,4 +457,4 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 > then `CLAUDE.md` (my rules: one task at a time, plan first, no new libraries/pages without asking, simple commented code, never delete the
 > DB except via seed.py, Windows PowerShell). The site runs at http://127.0.0.1:5000 when you start it with `python run.py` from the activated
 > `venv`; demo logins are in section 2.2 of the gist. Do not run `seed.py` or submit POST forms against my live data without asking
-> (use the temporary-database recipe in section 12.2). The redesign is uncommitted; do not commit unless I ask. Today I want you to: [WRITE YOUR TASK HERE].
+> (use the temporary-database recipe in section 12.2). Everything is committed; do not commit unless I ask. Run `python -m pytest` before and after any change. Today I want you to: [WRITE YOUR TASK HERE].

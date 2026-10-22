@@ -115,7 +115,10 @@ This folder holds the documents for the Software Engineering assignment. Everyth
 - **Wireframes** are hand-built SVG files (grayscale on purpose, so the layout is judged before the colour).
 - **Prototype screenshots** come from the running application. A temporary copy was started on port 5001 with a temporary database and upload folder (the real database and the server on port 5000 were not touched) and only the seeded demo accounts were used.
 
-## Known issue noted in these documents
+## Known issues noted in these documents
 
-The Officer dashboard and the borrower's My loans page are wider than a 390 px phone screen (see SRS section 9 and the prototype section of file 03). It is documented, not fixed.
+1. The Officer dashboard and the borrower's My loans page are wider than a 390 px phone screen (see SRS section 9 and the prototype section of file 03).
+2. One decorative icon in the utility bar lacks `aria-hidden` (SRS section 9; a strict expected-failure test in `tests/test_ui.py` records it).
+
+Both are documented, not fixed, and wait for the owner's go-ahead.
 

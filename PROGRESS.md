@@ -620,3 +620,33 @@ All checks ran on temporary data; the live `instance/microloan.db`, `uploads/` a
   `aria-hidden="true"` (CLAUDE.md 9a says all icons are hidden). One attribute fixes it; not changed because no application code change was authorised in Part 4.
 - Also updated: README (how to run), CLAUDE.md (`requirements-dev.txt`, `tests/`), handoff gist, technical document (section 16, slide 23, viva answers,
   limitations). `requirements.txt` is unchanged; `pytest.ini` turns the pytest cache off so no `.pytest_cache` folder appears.
+
+---
+
+## Part 5: final verification and consistency
+
+### Plan
+- Rerun the whole pytest suite on a temporary database.
+- Run the demo script of CLAUDE.md section 13 against a **real server** (port 5001, temporary database and upload folder; real HTTP with cookies and the CSRF
+  tokens read from the pages), not only through the in-process test client. Stop that server afterwards. Leave port 5000 and the live database alone.
+- Compare README.md, CLAUDE.md, PROJECT_HANDOFF_GIST.md, WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md and `docs/` for: route count, logout method, known issues,
+  test counts, docs folder, slide and diagram counts, code-size figures; fix every disagreement. The handoff gist sections about the git state and open
+  items are rewritten for the final state.
+- Final report: Parts 1 to 4 done or not done with their verification, `docs/` mapped to the assignment checklist, test result, commits, what to check by hand.
+- No application code changes; no reseed of the live database.
+
+### Verified (Part 5)
+- **Full suite** on a temporary database: **1,370 passed, 1 expected failure, 68 seconds** (final run after the last documentation edit).
+- **Demo script of CLAUDE.md section 13 against a real server** (port 5001, temporary database and upload folder, plain HTTP with cookies and the CSRF
+  token read from each page): **25 / 25 checks passed** (register and apply for 50,000 / 12 months with EMI 4,442.44; second application blocked; officer
+  pick up, approve, disburse with 12 installments; borrower pays installment 1 and the loan becomes Repaying; admin sets 14 %, a new loan gets EMI 4,489.36
+  while the first keeps 12 %; reports show 2 Repaying; Aman's overdue installment and Sneha's Closed loan; `GET /logout` is 405, `POST /logout` works;
+  role walls and static files). The 5001 server was stopped afterwards; the server on port 5000 answered 200 before and after.
+- **Documents agree** (checked by script): every document that gives a route count says 22; logout is a POST everywhere; the `docs/` folder is named in the
+  README, CLAUDE.md, the gist and the technical document; the test count (1,371 tests, 1,370 pass, 1 expected failure) matches; 31 slides and 32 + 28
+  diagrams are quoted consistently; both open findings (two pages wider than a 390 px phone, one icon without `aria-hidden`) appear in the README, the gist,
+  the SRS, `docs/README.md`, the technical document and the wireframes file.
+- The handoff gist's git-state, open-items and starter-message sections were rewritten for the final state (everything committed).
+- **The live database `instance/microloan.db` and `uploads/` were not opened, read or changed in any part of this session**; `seed.py` was never run on them.
+- **Reseed before the demo?** Yes, on the day of the demo (`python seed.py`, answer `y`), because the seed dates are relative to the day it runs (the
+  "one overdue installment" state only holds that day) and the live database still holds extra test data (your own account and LN-0008); the reseed deletes them.

@@ -462,7 +462,7 @@ swimlane, 6 to 6g data flow, 7 to 7e sequence) and the test module that checks i
 | Part 2e | NFR-06 | `SameSite=Lax` and `HttpOnly` session cookie |
 | Part 2f | FR-07 | Logout is POST only, with the CSRF token |
 
-**Known issue found while taking the prototype screenshots (not fixed, needs the owner's go-ahead):** at 390 px width the Officer dashboard and the borrower's My loans page are wider than the screen (594 px and 655 px), so the browser widens the layout and the last table columns are cut off until swiped; NFR-15 is therefore **not met on those two pages**. Cause: a visually hidden label inside the scrolling table is absolutely positioned and escapes the table wrapper. Suggested fix: one CSS line, `position: relative` on `.table-responsive`.
+**Known issue found while taking the prototype screenshots (not fixed, needs the owner's go-ahead):** at 390 px width the Officer dashboard and the borrower's My loans page are wider than the screen (594 px and 655 px), so the browser widens the layout and the last table columns are cut off until swiped; NFR-15 is therefore **not met on those two pages**. Cause: a visually hidden label inside the scrolling table is absolutely positioned and escapes the table wrapper. Suggested fix: one CSS line, `position: relative` on `.table-responsive`. **A second finding:** the shield icon in the utility bar of `base.html` has no `aria-hidden="true"`, so NFR-14 (accessibility) has one known exception; a strict expected-failure test (`tests/test_ui.py`) records it.
 
 **Known limitations** (honest list): money is stored as floating point; the monthly income is not checked for decimals;
 no database migrations; no pagination; simultaneous requests are not tested; SQLite foreign keys are not enforced; the

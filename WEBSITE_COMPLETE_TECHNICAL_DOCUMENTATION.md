@@ -2987,6 +2987,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | Monthly income may have more than 2 decimals | Only the loan amount and the amount limits are checked for 2 decimals |
 | No rate limiting or account lockout | Not in the code |
 | No pagination | Lists load all matching rows |
+| One decorative icon is not hidden from screen readers | The shield icon in the utility bar of `base.html` has no `aria-hidden="true"`; a strict expected-failure test records it (one attribute fixes it) |
 | The tests do not run the browser | The JavaScript (live EMI preview, charts) and the visual layout are checked by hand and with screenshots (section 16.5) |
 | Two pages are wider than a 390 px phone screen | The Officer dashboard (594 px) and My loans (655 px): a visually hidden label inside the scrolling table is absolutely positioned and widens the page. Found while taking the prototype screenshots; not fixed (one CSS line would fix it) |
 | Tested on Windows only | Portability to Mac and Linux is claimed in the blueprint but was **Not Verified** |
