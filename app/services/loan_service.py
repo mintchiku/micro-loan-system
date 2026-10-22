@@ -1,14 +1,15 @@
 """Business rules and status changes (CLAUDE.md §6, §7). Routes call these; rules live only here."""
 import os
+import re
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import current_app
 from werkzeug.utils import secure_filename
 
 from app import db
-from app.models import ACTIVE_STATUSES, Document, Loan, LoanSetting, User
-from app.services.emi import calculate_emi, max_affordable_amount
+from app.models import ACTIVE_STATUSES, Document, Loan, LoanSetting, Repayment, User
+from app.services.emi import build_schedule, calculate_emi, max_affordable_amount
 from app.utils.formatters import inr
 
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png"}
@@ -195,4 +196,89 @@ def cancel_loan(loan, borrower):
         db.session.commit()
     except Exception:
         db.session.rollback()  # NFR9: nothing is half-saved
+        raise
+
+
+# ---------- Officer review workflow (rule 11 is enforced inside change_status) ----------
+
+def search_loans(status="", text=""):
+    """Loans for the applications list, filtered by status and by borrower name or loan ID."""
+    query = Loan.query.join(User, Loan.borrower_id == User.id)
+    if status:
+        query = query.filter(Loan.status == status)
+    text = text.strip()
+    if text:
+        id_match = re.fullmatch(r"(?:LN-?)?(\d+)", text, re.IGNORECASE)  # "LN-0007", "ln7" or "7"
+        if id_match:
+            query = query.filter(Loan.id == int(id_match.group(1)))
+        else:
+            query = query.filter(User.name.ilike(f"%{text}%"))
+    return query.order_by(Loan.applied_on.desc()).all()
+
+
+def officer_summary(officer):
+    """Counts and pending-work list for the officer dashboard."""
+    my_pending = (Loan.query.filter(Loan.officer_id == officer.id,
+                                    Loan.status.in_(("Under Review", "Approved")))
+                  .order_by(Loan.applied_on).all())
+    return {
+        "new_count": Loan.query.filter_by(status="Applied").count(),
+        "review_count": sum(1 for loan in my_pending if loan.status == "Under Review"),
+        "approved_count": sum(1 for loan in my_pending if loan.status == "Approved"),
+        "my_pending": my_pending,
+    }
+
+
+def pick_up_loan(loan, officer):
+    """Officer takes an Applied loan for review; from now on only they can act on it."""
+    try:
+        change_status(loan, "Under Review", officer)
+        loan.officer_id = officer.id
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+
+def approve_loan(loan, officer, remarks=""):
+    """Assigned officer approves the loan (remarks optional)."""
+    if len(remarks) > 300:
+        raise LoanError("Remarks must be at most 300 characters.")
+    try:
+        change_status(loan, "Approved", officer)
+        loan.reviewed_on = datetime.now()
+        loan.remarks = remarks or None
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+
+def reject_loan(loan, officer, remarks):
+    """Assigned officer rejects the loan; a reason (remarks) is required."""
+    if not remarks:
+        raise LoanError("Please enter remarks explaining why the application is rejected.")
+    if len(remarks) > 300:
+        raise LoanError("Remarks must be at most 300 characters.")
+    try:
+        change_status(loan, "Rejected", officer)
+        loan.reviewed_on = datetime.now()
+        loan.remarks = remarks
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+
+def disburse_loan(loan, officer):
+    """Assigned officer pays out the loan; the EMI schedule is generated now (rule 7)."""
+    try:
+        change_status(loan, "Disbursed", officer)
+        loan.disbursed_on = date.today()
+        for row in build_schedule(loan, loan.disbursed_on):
+            loan.repayments.append(Repayment(installment_no=row["installment_no"], due_date=row["due_date"],
+                                             amount=row["amount"], status="Pending"))
+        db.session.commit()  # status change and all installments are saved together
+    except Exception:
+        db.session.rollback()
         raise

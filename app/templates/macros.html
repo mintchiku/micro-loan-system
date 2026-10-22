@@ -26,6 +26,28 @@
 <span class="badge text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
 {% endmacro %}
 
+{# EMI schedule table of a disbursed loan; overdue rows get a red badge #}
+{% macro schedule_table(loan) %}
+<div class="table-responsive">
+  <table class="table table-sm align-middle bg-white mb-0">
+    <thead class="table-light">
+      <tr><th>No.</th><th>Due date</th><th class="text-end">Amount</th><th>Status</th><th>Paid on</th></tr>
+    </thead>
+    <tbody>
+      {% for repayment in loan.repayments %}
+      <tr class="{{ 'table-danger' if repayment.is_overdue() }}">
+        <td>{{ repayment.installment_no }}</td>
+        <td>{{ repayment.due_date|date }}</td>
+        <td class="text-end">{{ repayment.amount|inr }}</td>
+        <td>{{ status_badge("Overdue" if repayment.is_overdue() else repayment.status) }}</td>
+        <td>{{ repayment.paid_on|date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+
 {# Hidden CSRF field; put inside every POST form #}
 {% macro csrf_field() %}
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

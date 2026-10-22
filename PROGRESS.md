@@ -10,7 +10,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 2. Auth | Done |
 | 3. Seed (users) | Done |
 | 4. Apply | Done |
-| 5. Officer | Not started |
+| 5. Officer | Done |
 | 6. Repay | Not started |
 | 7. Admin + full seed | Not started |
 | 8. Polish | Not started |
@@ -201,3 +201,37 @@ Then log in as `officer@test.com` / `admin@test.com` with password `Test@1234`.
 - A request over 3 MB is cut off by Flask (413) and the user is sent back to the form with a
   message. Note: with the Werkzeug development server some browsers show "connection reset"
   for very large files instead of the message; files up to 3 MB always get the normal field error.
+
+---
+
+## Phase 5 — Officer workflow
+
+### Plan
+- `loan_service.py`: `search_loans` (status + name / LN-ID search), `officer_summary`,
+  `pick_up_loan`, `approve_loan`, `reject_loan` (remarks required), `disburse_loan`
+  (sets `disbursed_on`, creates Repayment rows from `build_schedule`) — all through `change_status`
+- `routes/officer.py`: dashboard, `/applications` (status tabs + search), `/applications/<id>`,
+  POST `/applications/<id>/<action>` with action = `pickup | approve | reject | disburse`
+- Templates: `officer/dashboard.html`, `officer/applications.html`,
+  `officer/application_detail.html`; `schedule_table` macro; "Applications" navbar link
+
+### Verified (test client, 43/43 checks; Phase 2 and 4 checks re-run: all pass)
+- Borrower applies → officer1 picks up (Under Review, `officer_id` set) → approves
+  (`reviewed_on`, remarks saved) → disburses (`disbursed_on` = today) → 12 Pending installments,
+  due dates = disbursed_on + i months, total = EMI × 12 to the paisa; schedule shown on the page.
+- Skipping states (Applied → Approved / Disbursed) and disbursing twice are refused.
+- Reject with blank remarks is refused with a message; reject with remarks → Rejected, borrower
+  sees the reason and can apply again.
+- officer2 sees "Assigned to Priya Officer" and no buttons; officer2's approve / reject / disburse /
+  pick-up POSTs (typed URLs) are all refused by `change_status` with a clear error.
+- Unknown action → 404, GET on an action URL → 405, borrower or admin POST → 403.
+- Admin can open the list and detail pages read-only (no forms).
+- Borrower loan page shows the new status, officer name and remarks.
+
+### Decisions
+- Admin read-only access reuses `/officer/applications` and `/officer/applications/<id>`
+  (`@role_required("officer", "admin")`); the action route is officer-only.
+- Approve accepts optional remarks; reject requires them (max 300 characters).
+- Approve and Reject share one form (two buttons with `formaction`); confirm dialog on Reject
+  and Disburse.
+- Search accepts `LN-0007`, `ln7` or `7` as a loan ID, otherwise matches the borrower name.
