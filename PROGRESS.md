@@ -14,7 +14,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 6. Repay | Done |
 | 7. Admin + full seed | Done |
 | 8. Polish | Done |
-| 9. Final audit | Not started |
+| 9. Final audit | Done (report only, no code changed) |
 
 ---
 
@@ -356,3 +356,26 @@ python -c "from app import create_app, db; from app.models import Loan; from app
 ### Note
 - The pages were checked through the Flask test client and HTML assertions, not by eye in a browser.
   Please click through the pages once (especially at phone width) — see the manual-check list in the final report.
+
+---
+
+## Phase 9 — Final audit (report only)
+
+An audit script (outside the project) ran `seed.py`'s functions on a temporary database and checked, with the
+Flask test client: the demo script (§13), the permission matrix (§4), every (from, to, actor) transition
+(6 actors x 8 x 8 = 384 combinations), business rules 1-11, and NFR1-NFR12. Result: **89/89 checks pass**.
+Checks that could be vacuous were given a control (e.g. a token-less POST changes nothing, the same POST with
+a token does).
+
+### Issues found (nothing fixed yet; waiting for the owner to choose)
+1. **Amounts with more than 2 decimals are accepted** (e.g. 10000.999 is stored as-is). Suggested fix: reject or round to 2 decimals in `check_application`.
+2. **Uploaded files are checked by extension and size only**, not by content (a text file named `.pdf` is accepted). Blueprint rule 10 only asks for type by extension, so this is "met", but it is the weakest part of NFR5.
+3. **A deactivated officer's Under Review / Approved loans are stuck**: rule 11 means no other officer can act on them and there is no reassign feature (the blueprint has none). Suggest: warn on deactivation, or allow the admin to reassign.
+4. **Duplicate email race**: the unique check runs before the insert; two simultaneous registrations could hit the database `IntegrityError` and show the 500 page. Very unlikely in a demo.
+5. **Session cookie `SameSite` is not set** (Flask default None). CSRF tokens already protect the POST forms; adding `SESSION_COOKIE_SAMESITE = "Lax"` is a one-line hardening.
+6. `GET /logout` changes state (the blueprint's own §8 table specifies GET).
+
+### Blueprint vs. code
+- Not in the blueprint but added (all small, needed): `app/templates/macros.html`, `app/utils/formatters.py` (the `inr` / `date` filters), `LoanError`, `STATUS_ORDER`, a 413 handler, `PROGRESS.md`.
+- Admin read-only access to applications reuses the officer routes (the blueprint lists no admin application page).
+- In the blueprint but not built as written: separate `EMICalculator` / `LoanService` **classes** (built as module functions), an `about` page mentioned in the folder tree, the *Disbursed* status in the seed data (see Phase 7 decisions).
