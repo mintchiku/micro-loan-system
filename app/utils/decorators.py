@@ -10,8 +10,10 @@ from app import login_manager
 def role_required(*roles):
     """Allow a view only for logged-in users whose role is in `roles`, e.g. @role_required("officer")."""
     def decorator(view):
+        """Wrap one view function with the role check."""
         @wraps(view)
         def wrapped(*args, **kwargs):
+            """Run the view only if the user is logged in with an allowed role."""
             if not current_user.is_authenticated:
                 return login_manager.unauthorized()  # redirects to the login page
             if current_user.role not in roles:

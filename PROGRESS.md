@@ -13,7 +13,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 5. Officer | Done |
 | 6. Repay | Done |
 | 7. Admin + full seed | Done |
-| 8. Polish | Not started |
+| 8. Polish | Done |
 | 9. Final audit | Not started |
 
 ---
@@ -326,3 +326,33 @@ python -c "from app import create_app, db; from app.models import Loan; from app
   demonstrated by registering a new borrower in the demo script.
 - A bug found and fixed while testing: in Jinja `chart.values` returns the dict method, so the
   template uses `chart["values"]`.
+
+---
+
+## Phase 8 — Polish
+
+### What was checked / changed
+- Static audit of all 18 Python files and 20 templates: every function and class has a one-line
+  docstring (two inner functions in `decorators.py` were missing one — added), no unused imports,
+  no `print()` outside `seed.py` and the `emi.py` self-test, no TODO / debug leftovers, every page
+  extends `base.html` with its own `<title>`, every POST form contains `csrf_field()`, and all money
+  and dates in templates go through `inr` / `date` (the only raw numbers are `data-*` attributes read by
+  the live EMI preview JavaScript).
+- Landing page: hero, "How it works" (3 steps), new "Why MicroLoan?" features row, footer; no external images.
+- Confirm dialogs: cancel application, reject, disburse, pay installment, activate / deactivate user.
+- Empty states with a helpful button on: My loans, borrower dashboard, officer dashboard, applications
+  list, users list, reports (charts and overdue table), recent payments.
+- Flash messages use Bootstrap colours (success, danger, warning, info); the login-required message is a warning.
+- Tables are in `.table-responsive`, the navbar collapses on phones, forms use the Bootstrap grid.
+- `README.md` rewritten: features, tech stack, setup, seed, run, demo logins, seeded loans, demo script, folder tree.
+
+### Verified
+- Page crawl on the seeded data, 61/61: 3 public pages, borrower / officer / admin pages and every
+  seeded loan detail page for each role return 200 with a `| MicroLoan` title, the viewport meta tag, and
+  no unrendered template text; spot checks of the Repaying, Closed, Cancelled, Approved and Rejected
+  borrower views, officer ownership view, document download, 403 / 404 / 500 pages.
+- Phases 2, 4, 5, 6, 7 test suites re-run after the changes: all pass.
+
+### Note
+- The pages were checked through the Flask test client and HTML assertions, not by eye in a browser.
+  Please click through the pages once (especially at phone width) — see the manual-check list in the final report.
