@@ -9,8 +9,11 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.models import ACTIVE_STATUSES, Document, Loan, LoanSetting, Repayment, User
-from app.services.emi import build_schedule, calculate_emi, max_affordable_amount
+from app.services.emi import add_months, build_schedule, calculate_emi, max_affordable_amount
 from app.utils.formatters import inr
+
+# All loan statuses in lifecycle order (used for reports)
+STATUS_ORDER = ["Applied", "Under Review", "Approved", "Disbursed", "Repaying", "Closed", "Rejected", "Cancelled"]
 
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png"}
 MAX_DOCUMENT_BYTES = 2 * 1024 * 1024  # 2 MB
@@ -322,4 +325,86 @@ def borrower_summary(borrower):
         "next_due": active_loan.next_due_installment() if active_loan else None,
         "overdue_count": sum(1 for r in active_loan.repayments if r.is_overdue()) if active_loan else 0,
         "recent_payments": recent_payments,
+    }
+
+
+# ---------- Admin: users and settings ----------
+
+def search_users(role="", text=""):
+    """Users for the admin list, filtered by role and by name or email."""
+    query = User.query
+    if role:
+        query = query.filter(User.role == role)
+    text = text.strip()
+    if text:
+        query = query.filter(User.name.ilike(f"%{text}%") | User.email.ilike(f"%{text}%"))
+    return query.order_by(User.role, User.name).all()
+
+
+def toggle_user_active(user, admin):
+    """Activate or deactivate a user. An admin cannot deactivate themselves."""
+    if user.id == admin.id:
+        raise LoanError("You cannot deactivate your own account.")
+    try:
+        user.is_active = not user.is_active
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+
+def update_settings(numbers):
+    """Save new loan settings. Existing loans keep their own rate (rule 6)."""
+    settings = get_settings()
+    try:
+        for field, value in numbers.items():
+            setattr(settings, field, value)
+        settings.updated_at = datetime.now()
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+    return settings
+
+
+# ---------- Admin: dashboard totals and reports ----------
+
+def overdue_installments():
+    """All Pending installments whose due date has passed, oldest first."""
+    return (Repayment.query.filter(Repayment.status == "Pending", Repayment.due_date < date.today())
+            .order_by(Repayment.due_date).all())
+
+
+def admin_totals():
+    """Numbers for the admin dashboard: users, loans by status and money totals."""
+    loans = Loan.query.all()
+    repayments = Repayment.query.all()
+    loans_by_status = {status: 0 for status in STATUS_ORDER}
+    for loan in loans:
+        loans_by_status[loan.status] += 1
+    users_by_role = {role: User.query.filter_by(role=role).count() for role in ("borrower", "officer", "admin")}
+    return {
+        "users_by_role": users_by_role,
+        "total_users": sum(users_by_role.values()),
+        "loans_by_status": loans_by_status,
+        "total_loans": len(loans),
+        "disbursed": round(sum(loan.amount for loan in loans if loan.disbursed_on), 2),
+        "collected": round(sum(r.amount for r in repayments if r.status == "Paid"), 2),
+        "outstanding": round(sum(r.amount for r in repayments if r.status == "Pending"), 2),
+        "overdue_count": sum(1 for r in repayments if r.is_overdue()),
+    }
+
+
+def disbursed_per_month(months=6):
+    """Amount disbursed in each of the last `months` months (oldest first), for the bar chart."""
+    first_of_this_month = date.today().replace(day=1)
+    month_starts = [add_months(first_of_this_month, -i) for i in range(months - 1, -1, -1)]
+    totals = {(m.year, m.month): 0 for m in month_starts}
+    for loan in Loan.query.filter(Loan.disbursed_on.isnot(None)).all():
+        key = (loan.disbursed_on.year, loan.disbursed_on.month)
+        if key in totals:
+            totals[key] += loan.amount
+    return {
+        "labels": [m.strftime("%b %Y") for m in month_starts],
+        "values": [round(totals[(m.year, m.month)], 2) for m in month_starts],
     }

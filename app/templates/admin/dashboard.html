@@ -1,7 +1,73 @@
 {% extends "base.html" %}
+{% import "macros.html" as m %}
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="h3">Welcome, {{ current_user.name }}</h1>
-<p class="text-muted">Admin dashboard</p>
+<h1 class="h3 mb-4">Welcome, {{ current_user.name }}</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Users</div>
+      <div class="display-6">{{ totals.total_users }}</div>
+      <div class="small text-muted">
+        {{ totals.users_by_role.borrower }} borrowers &middot; {{ totals.users_by_role.officer }} officers &middot;
+        {{ totals.users_by_role.admin }} admin
+      </div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Disbursed</div>
+      <div class="fs-3">{{ totals.disbursed|inr }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Collected</div>
+      <div class="fs-3 text-success">{{ totals.collected|inr }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Outstanding</div>
+      <div class="fs-3">{{ totals.outstanding|inr }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Loans by status ({{ totals.total_loans }} total)</div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3">
+          {% for status, count in totals.loans_by_status.items() %}
+            <a href="{{ url_for('officer.applications', status=status) }}" class="text-decoration-none text-center">
+              <div class="fs-4">{{ count }}</div>
+              {{ m.status_badge(status) }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100 {{ 'border-danger' if totals.overdue_count }}">
+      <div class="card-body">
+        <div class="text-muted small">Overdue installments</div>
+        <div class="display-6 {{ 'text-danger' if totals.overdue_count }}">{{ totals.overdue_count }}</div>
+        <a href="{{ url_for('admin.reports') }}" class="btn btn-outline-primary btn-sm mt-2">
+          <i class="bi bi-bar-chart"></i> View reports</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mt-4">
+  <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary"><i class="bi bi-people"></i> Manage users</a>
+  <a href="{{ url_for('admin.new_officer') }}" class="btn btn-outline-secondary"><i class="bi bi-person-plus"></i> Create officer</a>
+  <a href="{{ url_for('admin.settings') }}" class="btn btn-outline-secondary"><i class="bi bi-sliders"></i> Loan settings</a>
+  <a href="{{ url_for('officer.applications') }}" class="btn btn-outline-secondary"><i class="bi bi-list-check"></i> All applications</a>
+</div>
 {% endblock %}

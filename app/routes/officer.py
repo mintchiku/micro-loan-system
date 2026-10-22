@@ -11,8 +11,7 @@ from app.utils.decorators import role_required
 officer_bp = Blueprint("officer", __name__)
 
 # Status filter tabs on the applications list ("" = all)
-STATUS_TABS = ["", "Applied", "Under Review", "Approved", "Disbursed", "Repaying",
-               "Closed", "Rejected", "Cancelled"]
+STATUS_TABS = [""] + loan_service.STATUS_ORDER
 
 
 @officer_bp.route("/dashboard")

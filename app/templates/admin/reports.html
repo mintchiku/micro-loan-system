@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4"><i class="bi bi-bar-chart"></i> Reports</h1>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Loans by status</div>
+      <div class="card-body">
+        {% if status_chart["values"]|sum %}
+          <canvas id="status-chart" height="260"></canvas>
+        {% else %}
+          <p class="text-muted text-center my-5">No loans yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Amount disbursed per month (last 6 months)</div>
+      <div class="card-body">
+        {% if month_chart["values"]|sum %}
+          <canvas id="month-chart" height="200"></canvas>
+        {% else %}
+          <p class="text-muted text-center my-5">Nothing has been disbursed in the last 6 months.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5">Overdue installments</h2>
+{% if overdue %}
+<div class="table-responsive">
+  <table class="table table-hover align-middle bg-white">
+    <thead class="table-light">
+      <tr><th>Borrower</th><th>Loan</th><th>Installment</th><th>Due date</th><th>Days late</th><th class="text-end">Amount</th></tr>
+    </thead>
+    <tbody>
+      {% for item in overdue %}
+      <tr>
+        <td>{{ item.loan.borrower.name }}</td>
+        <td><a href="{{ url_for('officer.application_detail', loan_id=item.loan.id) }}">{{ item.loan.display_id() }}</a></td>
+        <td>{{ item.installment_no }} of {{ item.loan.tenure_months }}</td>
+        <td>{{ item.due_date|date }} {{ m.status_badge("Overdue") }}</td>
+        <td>{{ (today - item.due_date).days }}</td>
+        <td class="text-end">{{ item.amount|inr }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="text-center text-muted py-4 border rounded bg-white">
+  <i class="bi bi-emoji-smile display-5"></i>
+  <p class="mt-2 mb-0">No overdue installments.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  // Data comes from Flask through the tojson filter (safe escaping)
+  const statusData = {{ status_chart|tojson }};
+  const monthData = {{ month_chart|tojson }};
+
+  const statusCanvas = document.getElementById("status-chart");
+  if (statusCanvas) {
+    new Chart(statusCanvas, {
+      type: "pie",
+      data: {
+        labels: statusData.labels,
+        datasets: [{ data: statusData.values, backgroundColor: statusData.colors }],
+      },
+      options: { plugins: { legend: { position: "bottom" } } },
+    });
+  }
+
+  const monthCanvas = document.getElementById("month-chart");
+  if (monthCanvas) {
+    new Chart(monthCanvas, {
+      type: "bar",
+      data: {
+        labels: monthData.labels,
+        datasets: [{ label: "Disbursed (₹)", data: monthData.values, backgroundColor: "#0d6efd" }],
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: (v) => "₹" + v.toLocaleString("en-IN") } } },
+      },
+    });
+  }
+</script>
+{% endblock %}

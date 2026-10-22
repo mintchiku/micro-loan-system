@@ -46,6 +46,47 @@ def to_int(text):
         return None
 
 
+# ---------- Loan settings form (admin) ----------
+
+SETTING_FIELDS = ["interest_rate", "min_amount", "max_amount", "min_tenure", "max_tenure", "max_emi_to_income"]
+
+
+def validate_settings_form(form):
+    """Check the loan settings form. Returns (values as typed, parsed numbers, errors)."""
+    values = {field: form.get(field, "").strip() for field in SETTING_FIELDS}
+    numbers = {
+        "interest_rate": to_float(values["interest_rate"]),
+        "min_amount": to_float(values["min_amount"]),
+        "max_amount": to_float(values["max_amount"]),
+        "min_tenure": to_int(values["min_tenure"]),
+        "max_tenure": to_int(values["max_tenure"]),
+        "max_emi_to_income": to_float(values["max_emi_to_income"]),
+    }
+    errors = {}
+
+    if numbers["interest_rate"] is None or not 0 <= numbers["interest_rate"] <= 36:
+        errors["interest_rate"] = "Interest rate must be between 0 and 36 % per year."
+
+    if numbers["min_amount"] is None or numbers["min_amount"] <= 0:
+        errors["min_amount"] = "Minimum amount must be a number greater than 0."
+    if numbers["max_amount"] is None or numbers["max_amount"] <= 0:
+        errors["max_amount"] = "Maximum amount must be a number greater than 0."
+    elif "min_amount" not in errors and numbers["max_amount"] <= numbers["min_amount"]:
+        errors["max_amount"] = "Maximum amount must be greater than the minimum amount."
+
+    if numbers["min_tenure"] is None or numbers["min_tenure"] < 1:
+        errors["min_tenure"] = "Minimum tenure must be a whole number of months (at least 1)."
+    if numbers["max_tenure"] is None or numbers["max_tenure"] < 1:
+        errors["max_tenure"] = "Maximum tenure must be a whole number of months (at least 1)."
+    elif "min_tenure" not in errors and numbers["max_tenure"] <= numbers["min_tenure"]:
+        errors["max_tenure"] = "Maximum tenure must be greater than the minimum tenure."
+
+    if numbers["max_emi_to_income"] is None or not 1 <= numbers["max_emi_to_income"] <= 100:
+        errors["max_emi_to_income"] = "EMI-to-income limit must be between 1 and 100 %."
+
+    return values, numbers, errors
+
+
 # ---------- User forms (borrower registration, create officer) ----------
 
 def validate_user_form(form, with_income=True):

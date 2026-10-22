@@ -1,13 +1,98 @@
-"""Admin pages."""
-from flask import Blueprint, render_template
+"""Admin pages: dashboard, users, create officer, loan settings, reports."""
+from datetime import date
 
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user
+
+from app import db
+from app.models import User
+from app.services import loan_service
+from app.services.loan_service import LoanError
 from app.utils.decorators import role_required
+from app.utils.validators import SETTING_FIELDS, validate_settings_form, validate_user_form
 
 admin_bp = Blueprint("admin", __name__)
+
+# Pie chart colours, close to the status badge colours (§9)
+STATUS_COLORS = {
+    "Applied": "#6c757d", "Under Review": "#0dcaf0", "Approved": "#0d6efd", "Disbursed": "#ffc107",
+    "Repaying": "#fd7e14", "Closed": "#198754", "Rejected": "#dc3545", "Cancelled": "#212529",
+}
 
 
 @admin_bp.route("/dashboard")
 @role_required("admin")
 def dashboard():
-    """Admin home page (placeholder until a later phase)."""
-    return render_template("admin/dashboard.html")
+    """Admin home: totals for users, loans and money."""
+    return render_template("admin/dashboard.html", totals=loan_service.admin_totals())
+
+
+@admin_bp.route("/users")
+@role_required("admin")
+def users():
+    """All users with role filter and search by name or email."""
+    role = request.args.get("role", "")
+    if role not in ("", "borrower", "officer", "admin"):
+        role = ""
+    text = request.args.get("q", "")
+    return render_template("admin/users.html", users=loan_service.search_users(role, text), role=role, q=text)
+
+
+@admin_bp.route("/users/new-officer", methods=["GET", "POST"])
+@role_required("admin")
+def new_officer():
+    """Create a loan officer account (same checks as registration, no income)."""
+    values, errors = {}, {}
+    if request.method == "POST":
+        values, errors = validate_user_form(request.form, with_income=False)
+        if not errors:
+            officer = loan_service.create_user(values, request.form["password"], role="officer")
+            flash(f"Officer account created for {officer.name}.", "success")
+            return redirect(url_for("admin.users", role="officer"))
+    return render_template("admin/new_officer.html", values=values, errors=errors)
+
+
+@admin_bp.route("/users/<int:user_id>/toggle", methods=["POST"])
+@role_required("admin")
+def toggle_user(user_id):
+    """Activate or deactivate a user."""
+    user = db.get_or_404(User, user_id)
+    try:
+        loan_service.toggle_user_active(user, current_user)
+        flash(f"{user.name} is now {'active' if user.is_active else 'deactivated'}.", "success")
+    except LoanError as error:
+        flash(str(error), "danger")
+    return redirect(url_for("admin.users"))
+
+
+@admin_bp.route("/settings", methods=["GET", "POST"])
+@role_required("admin")
+def settings():
+    """Edit the loan settings; changes only affect new applications."""
+    current = loan_service.get_settings()
+    errors = {}
+    if request.method == "POST":
+        values, numbers, errors = validate_settings_form(request.form)
+        if not errors:
+            loan_service.update_settings(numbers)
+            flash("Loan settings saved. They apply to new applications only.", "success")
+            return redirect(url_for("admin.settings"))
+    else:
+        # show the saved values without trailing ".0" (12.0 -> 12)
+        values = {field: f"{getattr(current, field):g}" for field in SETTING_FIELDS}
+    return render_template("admin/settings.html", values=values, errors=errors, settings=current)
+
+
+@admin_bp.route("/reports")
+@role_required("admin")
+def reports():
+    """Charts (loans by status, disbursed per month) and the overdue installments table."""
+    totals = loan_service.admin_totals()
+    status_chart = {
+        "labels": list(totals["loans_by_status"].keys()),
+        "values": list(totals["loans_by_status"].values()),
+        "colors": [STATUS_COLORS[s] for s in totals["loans_by_status"]],
+    }
+    return render_template("admin/reports.html", status_chart=status_chart,
+                           month_chart=loan_service.disbursed_per_month(),
+                           overdue=loan_service.overdue_installments(), today=date.today())

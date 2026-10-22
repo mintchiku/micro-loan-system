@@ -12,7 +12,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 4. Apply | Done |
 | 5. Officer | Done |
 | 6. Repay | Done |
-| 7. Admin + full seed | Not started |
+| 7. Admin + full seed | Done |
 | 8. Polish | Not started |
 | 9. Final audit | Not started |
 
@@ -274,3 +274,55 @@ python -c "from app import create_app, db; from app.models import Loan; from app
   double click or a stale page cannot pay two installments.
 - Payment and status changes use the actor `"system"` for Disbursed → Repaying and
   Repaying → Closed, exactly as in the §6 table.
+
+---
+
+## Phase 7 — Admin panel, reports, full seed
+
+### Plan
+- `utils/validators.py`: `validate_settings_form` (rate 0–36, max > min for amount and tenure,
+  whole-month tenures, EMI % 1–100)
+- `loan_service.py`: `search_users`, `toggle_user_active` (not yourself), `update_settings`,
+  `admin_totals`, `disbursed_per_month`, `overdue_installments`, `STATUS_ORDER`
+- `routes/admin.py`: dashboard, users, new-officer, toggle (POST), settings, reports
+- Templates: `admin/dashboard|users|new_officer|settings|reports.html`; admin navbar links
+- Reports: Chart.js 4.4.4 from the CDN, data passed with `|tojson`
+- `seed.py`: `seed_loans()` with 7 loans + loan table in the printed summary
+- Admin loan details: reuses the officer detail page in read-only mode (decision from Phase 5)
+
+### Seeded loans (dates are relative to the day you run seed.py)
+| Loan | Borrower | Amount | Months | Status | Notes |
+|---|---|---|---|---|---|
+| LN-0001 | Sneha | 20,000 | 4 | Closed | disbursed 5 months ago, all 4 paid |
+| LN-0002 | Aman | 30,000 | 6 | Repaying | disbursed 4 months + 10 days ago; 3 paid, installment 4 overdue |
+| LN-0003 | Rohan | 40,000 | 12 | Rejected | remarks: document not readable |
+| LN-0004 | Kavya | 15,000 | 6 | Cancelled | |
+| LN-0005 | Kavya | 60,000 | 12 | Approved | officer2, ready to disburse |
+| LN-0006 | Sneha | 25,000 | 9 | Under Review | officer1 |
+| LN-0007 | Rohan | 35,000 | 12 | Applied | unassigned |
+
+### Verified (test client on the real seed data, 90/90; phases 2, 4, 5, 6 re-run: all pass)
+- Seed: all 7 statuses present, no borrower has more than one active loan, the Repaying loan has
+  exactly 1 overdue and 3 paid installments, the Closed loan is fully paid, schedule totals are exact.
+- Bar chart data: 6 month labels, two non-zero months, total ₹50,000; pie data covers all 8 statuses.
+  The inline chart script is valid JavaScript (`node --check`).
+- Access: every admin URL is 200 for admin, 403 for officer and borrower, redirect to login when
+  logged out; officer/borrower POSTs to admin routes → 403.
+- Dashboard totals match the database (users, disbursed, collected, outstanding, overdue = 1).
+- Users: role filter, name/email search (case-insensitive), empty state; deactivated user cannot
+  log in and an already-open session is logged out; admin cannot deactivate self; confirm dialog.
+- Create officer: duplicate email, bad phone/password rejected with values kept; new officer
+  logs in to the officer dashboard; public `/register` ignores a posted role.
+- Settings: 8 invalid inputs rejected with field errors; valid save to 14 % → existing loans
+  stay at 12 %, a new application gets 14 % (EMI ₹4,489.36 for ₹50,000 / 12 months).
+- Admin can open any loan read-only (no action forms; POST actions → 403).
+
+### Decisions and notes
+- **"Disbursed" is not seeded** (see Phase 0, question 4): only 4 borrowers exist and each may have
+  one active loan, so the four active slots are Applied, Under Review, Approved and Repaying.
+- Only the 7 loans listed in the blueprint are seeded, so the bar chart has data in two months
+  (Closed loan 5 months ago, Repaying loan 4 months ago).
+- Seeded loans have no uploaded document (the detail pages show "None"); documents are
+  demonstrated by registering a new borrower in the demo script.
+- A bug found and fixed while testing: in Jinja `chart.values` returns the dict method, so the
+  template uses `chart["values"]`.
