@@ -108,6 +108,12 @@ clean header, hero with a primary and a secondary button, summary tiles, multi-c
 [Laws of UX](https://lawsofux.com/). Blue carries structure; yellow marks the one next action on each screen.
 The tokens are at the top of `app/static/css/style.css`, and the full rules are in CLAUDE.md section 9a.
 
+## Documentation
+
+The software engineering documents are in [docs/](docs/README.md): the requirements specification (functional and
+non-functional requirements with a traceability matrix), the diagrams (use case, activity, swimlane, class, CRC cards, data flow,
+state, sequence), and the wireframes with prototype screenshots.
+
 ## Folder structure
 
 ```
@@ -115,6 +121,7 @@ micro-loan-system/
 ├── CLAUDE.md                 # project blueprint (single source of truth)
 ├── PROGRESS.md               # build log: plan, tests and decisions per phase
 ├── README.md
+├── docs/                     # SE documents: SRS, diagrams (PNG + SVG), CRC cards, wireframes, prototype screenshots
 ├── requirements.txt
 ├── .env.example              # SECRET_KEY=change-me
 ├── run.py                    # entry point: python run.py

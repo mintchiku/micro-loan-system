@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="906" viewBox="0 0 1200 906" role="img" aria-label="Register page (desktop)">
+<rect width="1200" height="906" fill="#ffffff"/>
+<rect x="0" y="0" width="1200" height="26" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">Demo environment · payments are simulated</text>
+<text x="1140" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="end">New here? Register in 2 minutes</text>
+<rect x="0" y="26" width="1200" height="58" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<line x1="0" y1="84" x2="1200" y2="84" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="60" y="40" width="30" height="30" rx="6" fill="#bdbdbd" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="75" y="61" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#1f1f1f" text-anchor="middle" font-weight="700">₹</text>
+<text x="100" y="61" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">MicroLoan</text>
+<text x="1140" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="end" font-weight="700" text-decoration="underline">Login</text>
+<rect x="0" y="84" width="600" height="700" rx="0" fill="#d9d9d9" stroke="#d9d9d9" stroke-width="1.4"/>
+<text x="60" y="170" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#1f1f1f" text-anchor="start" font-weight="700">Create your borrower</text>
+<text x="60" y="208" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#1f1f1f" text-anchor="start" font-weight="700">account</text>
+<text x="60" y="246" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">It takes two minutes. After that you can apply</text>
+<text x="60" y="265" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">for a loan whenever you are ready.</text>
+<text x="60" y="320" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">▣  See your EMI before you apply</text>
+<text x="60" y="360" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">▣  Upload one document, nothing more</text>
+<text x="60" y="400" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">▣  Follow each status update on your dashboard</text>
+<rect x="600" y="84" width="600" height="700" rx="0" fill="#f6f6f6" stroke="#f6f6f6" stroke-width="1.4"/>
+<rect x="680" y="108" width="440" height="610" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="704" y="148" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#1f1f1f" text-anchor="start" font-weight="700">Register</text>
+<text x="704" y="170" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Fields marked * are required.</text>
+<text x="704" y="196" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Full name *</text>
+<rect x="704" y="204" width="392" height="38" rx="5" fill="#f3f3f3" stroke="#1f1f1f" stroke-width="2.4" stroke-dasharray="6 3"/>
+<text x="704" y="258" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">! Name is required.</text>
+<text x="704" y="284" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Email *</text>
+<rect x="704" y="292" width="392" height="38" rx="5" fill="#f3f3f3" stroke="#1f1f1f" stroke-width="2.4" stroke-dasharray="6 3"/>
+<text x="704" y="346" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">! This email is already registered.</text>
+<text x="704" y="372" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Phone *</text>
+<rect x="704" y="380" width="190" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="704" y="434" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">10 digits</text>
+<text x="906" y="372" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Monthly income *</text>
+<rect x="906" y="380" width="190" height="38" rx="5" fill="#f3f3f3" stroke="#1f1f1f" stroke-width="2.4" stroke-dasharray="6 3"/>
+<rect x="906" y="380" width="34" height="38" rx="5" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="923" y="404.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="middle">₹</text>
+<text x="906" y="434" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">! Must be greater than 0.</text>
+<text x="704" y="460" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Password *</text>
+<rect x="704" y="468" width="190" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="704" y="522" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Min 8, letter + number</text>
+<text x="906" y="460" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Confirm password *</text>
+<rect x="906" y="468" width="190" height="38" rx="5" fill="#f3f3f3" stroke="#1f1f1f" stroke-width="2.4" stroke-dasharray="6 3"/>
+<text x="906" y="522" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">! Passwords do not match.</text>
+<rect x="704" y="568" width="392" height="46" rx="6" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="900.0" y="596.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="700">Create account</text>
+<line x1="704" y1="638" x2="1096" y2="638" stroke="#bdbdbd" stroke-width="1.2"/>
+<text x="900" y="668" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="middle">Already registered?  Login</text>
+<rect x="0" y="784" width="1200" height="1" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<rect x="0" y="784" width="1200" height="50" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="814" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">MicroLoan · Software Engineering project, NMIMS Hyderabad · No real money moves; payments are simulated.</text>
+<circle cx="1076" cy="55" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="1076" y="59.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<circle cx="40" cy="170" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="40" y="174.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<circle cx="692" cy="196" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="200.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="692" cy="284" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="288.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="692" cy="372" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="376.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="894" cy="372" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="894" y="376.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<circle cx="692" cy="460" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="464.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+<circle cx="894" cy="460" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="894" y="464.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">8</text>
+<circle cx="692" cy="591" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="595.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">9</text>
+<circle cx="722" cy="668" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="722" y="672.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">10</text>
+<line x1="16" y1="854" x2="1184" y2="854" stroke="#bdbdbd" stroke-width="1"/>
+<rect x="40" y="868" width="34" height="18" rx="4" fill="#1f1f1f"/>
+<text x="84" y="881" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">primary action (yellow in the design)</text>
+<rect x="330" y="868" width="34" height="18" rx="4" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="374" y="881" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">secondary action</text>
+<rect x="620" y="868" width="34" height="18" rx="4" fill="#e2e2e2" stroke="#bdbdbd" stroke-dasharray="4 3"/>
+<text x="664" y="881" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">disabled</text>
+<circle cx="927" cy="877" r="9" fill="#1f1f1f"/><text x="927" y="881" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="954" y="881" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">element number (see the list)</text>
+</svg>

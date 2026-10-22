@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="872" viewBox="0 0 1200 872" role="img" aria-label="Reports (desktop)">
+<rect width="1200" height="872" fill="#ffffff"/>
+<rect x="0" y="0" width="1200" height="26" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">Demo environment · payments are simulated</text>
+<text x="1140" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="end">Signed in as Admin User</text>
+<rect x="0" y="26" width="1200" height="58" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<line x1="0" y1="84" x2="1200" y2="84" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="60" y="40" width="30" height="30" rx="6" fill="#bdbdbd" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="75" y="61" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#1f1f1f" text-anchor="middle" font-weight="700">₹</text>
+<text x="100" y="61" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">MicroLoan</text>
+<text x="230" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Dashboard</text>
+<text x="338" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Users</text>
+<text x="414" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Applications</text>
+<text x="546" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Settings</text>
+<text x="646" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start" font-weight="700">Reports</text>
+<line x1="640" y1="82" x2="708" y2="82" stroke="#1f1f1f" stroke-width="4"/>
+<circle cx="910" cy="55" r="16" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="910" y="60" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="middle" font-weight="700">AU</text>
+<text x="935" y="51" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Admin User</text>
+<text x="935" y="66" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="start">Admin</text>
+<rect x="1040" y="41" width="100" height="34" rx="6" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="1090.0" y="63.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="middle" font-weight="700">Logout</text>
+<text x="60" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" text-decoration="underline">Dashboard</text>
+<text x="125.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">/</text>
+<text x="141.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Reports</text>
+<text x="60" y="148" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#1f1f1f" text-anchor="start" font-weight="700">Reports</text>
+<text x="60" y="172" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#6a6a6a" text-anchor="start">Where loans stand, how much was disbursed, and what is overdue.</text>
+<rect x="60" y="196" width="530" height="360" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="80" y="226" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#1f1f1f" text-anchor="start" font-weight="700">Loans by status</text>
+<line x1="60" y1="240" x2="590" y2="240" stroke="#bdbdbd" stroke-width="1.2"/>
+<circle cx="190" cy="380" r="100" fill="#ffffff" stroke="#4d4d4d" stroke-width="2"/>
+<line x1="190" y1="280" x2="190" y2="380" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="190" y1="380" x2="275" y2="330" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="190" y1="380" x2="280" y2="410" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="190" y1="380" x2="215" y2="478" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="190" y1="380" x2="120" y2="455" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="190" y1="380" x2="92" y2="360" stroke="#4d4d4d" stroke-width="1.4"/>
+<rect x="330" y="292" width="14" height="14" rx="2" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Applied</text>
+<text x="560" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="322" width="14" height="14" rx="2" fill="#cfcfcf" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="334" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Under Review</text>
+<text x="560" y="334" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="352" width="14" height="14" rx="2" fill="#6a6a6a" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="364" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Approved</text>
+<text x="560" y="364" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="382" width="14" height="14" rx="2" fill="#9a9a9a" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="394" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Repaying</text>
+<text x="560" y="394" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="412" width="14" height="14" rx="2" fill="#bdbdbd" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="424" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Closed</text>
+<text x="560" y="424" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="442" width="14" height="14" rx="2" fill="#7a7a7a" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Rejected</text>
+<text x="560" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<rect x="330" y="472" width="14" height="14" rx="2" fill="#1f1f1f" stroke="#4d4d4d" stroke-width="1"/>
+<text x="354" y="484" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Cancelled</text>
+<text x="560" y="484" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">1</text>
+<text x="84" y="520" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">▸ View as table</text>
+<rect x="610" y="196" width="530" height="360" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="630" y="226" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#1f1f1f" text-anchor="start" font-weight="700">Amount disbursed per month (last 6 months)</text>
+<line x1="610" y1="240" x2="1140" y2="240" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="650" y="360" width="40" height="140" rx="3" fill="#6a6a6a" stroke="#4d4d4d" stroke-width="1"/>
+<text x="670" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">May</text>
+<rect x="728" y="310" width="40" height="190" rx="3" fill="#6a6a6a" stroke="#4d4d4d" stroke-width="1"/>
+<text x="748" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">Jun</text>
+<text x="826" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">Jul</text>
+<text x="904" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">Aug</text>
+<text x="982" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">Sep</text>
+<text x="1060" y="522" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1f1f1f" text-anchor="middle">Oct</text>
+<line x1="640" y1="500" x2="1120" y2="500" stroke="#bdbdbd" stroke-width="1.2"/>
+<text x="634" y="540" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">▸ View as table</text>
+<text x="60" y="592" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f1f1f" text-anchor="start" font-weight="700">Overdue installments</text>
+<rect x="60" y="610" width="1080" height="88" rx="8" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<rect x="60" y="610" width="1080" height="36" rx="8" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="74" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Borrower</text>
+<text x="294" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Loan</text>
+<text x="454" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Installment</text>
+<text x="634" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Due date</text>
+<text x="834" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Days late</text>
+<text x="1126" y="633" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">Amount</text>
+<line x1="60" y1="646" x2="1140" y2="646" stroke="#bdbdbd" stroke-width="1.2"/>
+<text x="74" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Aman Gupta</text>
+<text x="294" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">LN-0002</text>
+<text x="454" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">4 of 6</text>
+<text x="634" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">13 Oct 2026  OVERDUE</text>
+<text x="834" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">10</text>
+<text x="1126" y="677.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end">₹5,176.45</text>
+<rect x="0" y="750" width="1200" height="50" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="780" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">MicroLoan · Software Engineering project, NMIMS Hyderabad · No real money moves; payments are simulated.</text>
+<circle cx="46" cy="112" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="46" y="116.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<circle cx="46" cy="226" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="46" y="230.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<circle cx="70" cy="520" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="70" y="524.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="596" cy="226" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="596" y="230.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="620" cy="540" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="620" y="544.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="46" cy="640" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="46" y="644.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<line x1="16" y1="820" x2="1184" y2="820" stroke="#bdbdbd" stroke-width="1"/>
+<rect x="40" y="834" width="34" height="18" rx="4" fill="#1f1f1f"/>
+<text x="84" y="847" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">primary action (yellow in the design)</text>
+<rect x="330" y="834" width="34" height="18" rx="4" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="374" y="847" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">secondary action</text>
+<rect x="620" y="834" width="34" height="18" rx="4" fill="#e2e2e2" stroke="#bdbdbd" stroke-dasharray="4 3"/>
+<text x="664" y="847" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">disabled</text>
+<circle cx="927" cy="843" r="9" fill="#1f1f1f"/><text x="927" y="847" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="954" y="847" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">element number (see the list)</text>
+</svg>

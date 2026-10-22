@@ -524,3 +524,48 @@ phase 8 62/62, UI 146/146, final audit 89/89, Part 1 28/28.
   regenerated in Part 3.
 - Monthly income is not checked for decimals (not part of the brief). Suggestion for later: apply the same rule.
 - Route 14a keeps its letter so the page numbers used by the wireframes list in CLAUDE.md section 14 stay valid.
+
+---
+
+## Part 3: SE documentation in docs/
+
+### Plan (files to create or change)
+- `docs/01_SRS_requirements.md`: IEEE-830 style SRS (introduction, overall description, functional requirements FR-01...
+  grouped by module, non-functional requirements NFR-01... with measurable criteria, traceability matrix to code, diagram
+  and test). Tests are named after the pytest modules planned for Part 4 (`tests/test_*.py`).
+- `docs/02_diagrams.md` + `docs/diagrams/*.png|svg`: use case, activity, swimlanes (full loan lifecycle with four lanes
+  incl. reassignment, and "Pay an installment"), class diagrams, CRC cards (tables), DFD level 0/1/2, state diagrams,
+  sequence diagrams (login, apply, review + disburse, pay, reassign). Existing diagrams from the technical document are
+  reused and updated. Every block is rendered in headless Edge (Mermaid 10.9.3) and exported as PNG and SVG.
+- `docs/03_wireframes_and_prototype.md` + `docs/wireframes/*.svg` (grayscale, hand-built SVG) + `docs/prototype/*.png`
+  (real pages from a throw-away server on port 5001 with a temporary database and seeded demo accounts only).
+- `docs/README.md`: maps every file to the assignment items.
+- `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (rebuilt from its source parts): swimlane and CRC sections, 22 routes,
+  logout POST, reassignment, fixed issues, updated diagram list, regenerated `file:line` references, slide plan with
+  Requirements, Swimlane, CRC cards and Wireframes/Prototype slides.
+- No application code changes in this part. The live database, `uploads/` and port 5000 are not touched.
+
+### Verified (Part 3)
+All checks ran on temporary data; the live `instance/microloan.db`, `uploads/` and the server on port 5000 were not touched
+(port 5000 kept answering 200 throughout; the port 5001 server was stopped at the end).
+
+| Item | What was checked | Result |
+|---|---|---|
+| Diagrams | All 24 Mermaid blocks of `docs/02_diagrams.md` and the 4 navigation maps of file 03 render without errors in Mermaid 10.9.3 and in 11.4.0; each was exported as PNG (2x) and SVG (SVGs contain no `foreignObject`, so they open outside a browser); the swimlanes, use case overview, DFD 3, state and reassign sequence were looked at and corrected (lane order, loop edges, a clipped note) | 28 diagrams, 56 files |
+| Swimlane | Lanes Borrower, System, Loan Officer, Admin, left to right; the reassignment is a dotted admin detour; a second swimlane covers "Pay an installment" | rendered and read |
+| SRS | 58 FRs and 16 NFRs generated from one data table; the generator asserts that the FR ids are consecutive and that all 22 route functions appear in the traceability matrix; the claims about the code were checked (confirm dialogs, `load_user`, 22 routes and 11 POST routes from the URL map) | pass |
+| Wireframes | 13 grayscale SVGs (11 desktop, 2 phone) with 108 numbered elements; rendered and corrected for overlaps; the numbered lists in the Markdown are generated from the same registry as the drawings | pass |
+| Prototype | 24 screenshots (12 pages x 1360 px and 390 px) from a temporary-database server on port 5001; seeded demo accounts only (Aman Gupta, Rohan Das, Priya Sharma, Admin User); two retakes were needed (first run logged in to an empty database, then the landing page was cut off at 3600 px) and the pages were checked by eye afterwards | pass |
+| Links | 127 relative links and image paths in `docs/*.md` | none broken |
+| Technical document | Parts patched and reassembled: 22 routes, POST logout, reassignment, 9 macros, forms per template, code size, swimlane (14.13), CRC cards (14.14), updated diagrams (14.15), 31-slide plan with slides 9a, 10a, 17a, 20a, issues fixed after the audit (17.4); 66 `file:line` references refreshed by diffing against the documented commit; all 32 Mermaid blocks render in both versions | pass |
+
+### Findings and notes (Part 3)
+- **Found, not fixed:** at 390 px the **Officer dashboard** (page becomes 594 px wide) and the borrower's **My loans** (655 px) are wider than
+  the phone screen; the other 13 pages measured exactly 390 px. Cause: a Bootstrap `.visually-hidden` label inside the scrolling table is
+  absolutely positioned and escapes the `.table-responsive` wrapper. Suggested one-line fix: `position: relative` on `.table-responsive`
+  in `style.css`. It is documented as a known limitation (SRS NFR-15 and section 9, technical document 17.2) and waits for your go-ahead.
+- The handoff gist still contains your local folder path (`C:\Users\utsav\...`); there is no email or account name in any document.
+- The SRS refers to test modules that Part 4 creates (`tests/test_auth.py`, `test_rules.py`, `test_emi.py`, `test_uploads.py`,
+  `test_state_machine.py`, `test_officer_flow.py`, `test_reassignment.py`, `test_repayment.py`, `test_admin.py`, `test_reports.py`,
+  `test_permissions.py`, `test_security.py`, `test_ui.py`, `test_performance.py`, `test_architecture.py`, `test_seed.py`, `test_demo_flow.py`).
+- Repository-state statements of the gist (section 13) are refreshed in Part 5, when the final commits exist.

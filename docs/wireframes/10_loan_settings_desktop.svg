@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="796" viewBox="0 0 1200 796" role="img" aria-label="Loan settings (desktop)">
+<rect width="1200" height="796" fill="#ffffff"/>
+<rect x="0" y="0" width="1200" height="26" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">Demo environment · payments are simulated</text>
+<text x="1140" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="end">Signed in as Admin User</text>
+<rect x="0" y="26" width="1200" height="58" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<line x1="0" y1="84" x2="1200" y2="84" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="60" y="40" width="30" height="30" rx="6" fill="#bdbdbd" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="75" y="61" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#1f1f1f" text-anchor="middle" font-weight="700">₹</text>
+<text x="100" y="61" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">MicroLoan</text>
+<text x="230" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Dashboard</text>
+<text x="338" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Users</text>
+<text x="414" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Applications</text>
+<text x="546" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start" font-weight="700">Settings</text>
+<line x1="540" y1="82" x2="616" y2="82" stroke="#1f1f1f" stroke-width="4"/>
+<text x="646" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Reports</text>
+<circle cx="910" cy="55" r="16" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="910" y="60" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="middle" font-weight="700">AU</text>
+<text x="935" y="51" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Admin User</text>
+<text x="935" y="66" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="start">Admin</text>
+<rect x="1040" y="41" width="100" height="34" rx="6" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="1090.0" y="63.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="middle" font-weight="700">Logout</text>
+<text x="60" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" text-decoration="underline">Dashboard</text>
+<text x="125.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">/</text>
+<text x="141.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Loan settings</text>
+<text x="60" y="148" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#1f1f1f" text-anchor="start" font-weight="700">Loan settings</text>
+<text x="60" y="172" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#6a6a6a" text-anchor="start">The limits borrowers see when they apply.</text>
+<rect x="200" y="196" width="800" height="56" rx="8" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="224" y="230" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">i  Changes apply only to new applications. Existing loans keep their interest rate.</text>
+<rect x="200" y="272" width="800" height="372" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="228" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Interest rate (% per year) *</text>
+<rect x="228" y="312" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="228" y="366" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Between 0 and 36</text>
+<text x="612" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Max EMI as % of income *</text>
+<rect x="612" y="312" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="612" y="366" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Between 1 and 100</text>
+<text x="228" y="398" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Minimum amount *</text>
+<rect x="228" y="406" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#1f1f1f" stroke-width="2.4" stroke-dasharray="6 3"/>
+<rect x="228" y="406" width="34" height="38" rx="5" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="245" y="430.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="middle">₹</text>
+<text x="228" y="460" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">! Use at most 2 decimal places.</text>
+<text x="612" y="398" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Maximum amount *</text>
+<rect x="612" y="406" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<rect x="612" y="406" width="34" height="38" rx="5" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="629" y="430.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="middle">₹</text>
+<text x="612" y="460" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Greater than the minimum</text>
+<text x="228" y="492" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Minimum tenure (months) *</text>
+<rect x="228" y="500" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="612" y="492" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Maximum tenure (months) *</text>
+<rect x="612" y="500" width="360" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="612" y="554" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Greater than the minimum</text>
+<rect x="228" y="578" width="200" height="46" rx="6" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="328.0" y="606.0" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="700">Save settings</text>
+<text x="446" y="607" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Last updated 21 Oct 2026</text>
+<rect x="0" y="674" width="1200" height="50" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="704" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">MicroLoan · Software Engineering project, NMIMS Hyderabad · No real money moves; payments are simulated.</text>
+<circle cx="46" cy="112" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="46" y="116.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<circle cx="186" cy="224" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="186" y="228.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<circle cx="214" cy="316" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="214" y="320.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="598" cy="316" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="598" y="320.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="214" cy="412" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="214" y="416.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="214" cy="506" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="214" y="510.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<circle cx="214" cy="601" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="214" y="605.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+<line x1="16" y1="744" x2="1184" y2="744" stroke="#bdbdbd" stroke-width="1"/>
+<rect x="40" y="758" width="34" height="18" rx="4" fill="#1f1f1f"/>
+<text x="84" y="771" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">primary action (yellow in the design)</text>
+<rect x="330" y="758" width="34" height="18" rx="4" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="374" y="771" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">secondary action</text>
+<rect x="620" y="758" width="34" height="18" rx="4" fill="#e2e2e2" stroke="#bdbdbd" stroke-dasharray="4 3"/>
+<text x="664" y="771" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">disabled</text>
+<circle cx="927" cy="767" r="9" fill="#1f1f1f"/><text x="927" y="771" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="954" y="771" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">element number (see the list)</text>
+</svg>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="766" viewBox="0 0 1200 766" role="img" aria-label="Login page (desktop)">
+<rect width="1200" height="766" fill="#ffffff"/>
+<rect x="0" y="0" width="1200" height="26" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">Demo environment · payments are simulated</text>
+<text x="1140" y="17" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="end">New here? Register in 2 minutes</text>
+<rect x="0" y="26" width="1200" height="58" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<line x1="0" y1="84" x2="1200" y2="84" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="60" y="40" width="30" height="30" rx="6" fill="#bdbdbd" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="75" y="61" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#1f1f1f" text-anchor="middle" font-weight="700">₹</text>
+<text x="100" y="61" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">MicroLoan</text>
+<text x="1140" y="61" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="end" font-weight="700" text-decoration="underline">Register</text>
+<rect x="0" y="84" width="600" height="560" rx="0" fill="#d9d9d9" stroke="#d9d9d9" stroke-width="1.4"/>
+<text x="60" y="170" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#1f1f1f" text-anchor="start" font-weight="700">Welcome back</text>
+<text x="60" y="214" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">Log in to see your loan, review applications</text>
+<text x="60" y="233" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#1f1f1f" text-anchor="start">or manage the system.</text>
+<rect x="600" y="84" width="600" height="560" rx="0" fill="#f6f6f6" stroke="#f6f6f6" stroke-width="1.4"/>
+<rect x="680" y="118" width="440" height="410" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="704" y="160" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#1f1f1f" text-anchor="start" font-weight="700">Login</text>
+<rect x="704" y="180" width="392" height="44" rx="6" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="722" y="207" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">! Invalid email or password.</text>
+<text x="704" y="250" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Email</text>
+<rect x="704" y="258" width="392" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="716" y="282" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#6a6a6a" text-anchor="start">you@example.com</text>
+<text x="704" y="330" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Password</text>
+<rect x="704" y="338" width="392" height="38" rx="5" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<rect x="704" y="408" width="392" height="46" rx="6" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="900.0" y="436.0" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="700">Login</text>
+<line x1="704" y1="482" x2="1096" y2="482" stroke="#bdbdbd" stroke-width="1.2"/>
+<text x="900" y="510" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="middle">New here?  Register</text>
+<rect x="0" y="644" width="1200" height="50" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="60" y="674" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">MicroLoan · Software Engineering project, NMIMS Hyderabad · No real money moves; payments are simulated.</text>
+<circle cx="1062" cy="55" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="1062" y="59.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<circle cx="40" cy="170" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="40" y="174.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<circle cx="692" cy="202" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="206.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="692" cy="268" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="272.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="692" cy="374" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="378.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="692" cy="431" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="692" y="435.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<circle cx="722" cy="510" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="722" y="514.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">7</text>
+<line x1="16" y1="714" x2="1184" y2="714" stroke="#bdbdbd" stroke-width="1"/>
+<rect x="40" y="728" width="34" height="18" rx="4" fill="#1f1f1f"/>
+<text x="84" y="741" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">primary action (yellow in the design)</text>
+<rect x="330" y="728" width="34" height="18" rx="4" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="374" y="741" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">secondary action</text>
+<rect x="620" y="728" width="34" height="18" rx="4" fill="#e2e2e2" stroke="#bdbdbd" stroke-dasharray="4 3"/>
+<text x="664" y="741" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">disabled</text>
+<circle cx="927" cy="737" r="9" fill="#1f1f1f"/><text x="927" y="741" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="954" y="741" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">element number (see the list)</text>
+</svg>

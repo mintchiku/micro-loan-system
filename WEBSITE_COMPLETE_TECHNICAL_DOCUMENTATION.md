@@ -18,8 +18,8 @@ Software Engineering course project, NMIMS Hyderabad (B.Tech CS & Data Science)
 | **How it works** | 5 Frontend, 6 Backend, 7 Database, 8 Business rules and state machine |
 | **Features and flows** | 9 Feature workflows (F1 to F17), 10 Complete user journey, 11 Data flow |
 | **Quality** | 12 Security, 13 Error handling, 16 Testing and results, 17 Advantages, limitations, future work |
-| **Diagrams** | 14 UML and system diagrams (14.1 to 14.13, Mermaid source) |
-| **Presentation** | 15 Slide-by-slide plan (27 slides, with speaker notes) |
+| **Diagrams** | 14 UML and system diagrams (14.1 to 14.16, Mermaid source), including swimlane diagrams (14.13), CRC cards (14.14) and the diagrams updated after the first audit (14.15) |
+| **Presentation** | 15 Slide-by-slide plan (31 slides: the 27 requested plus 9a Requirements, 10a Wireframes and prototype, 17a Swimlane, 20a CRC cards; with speaker notes) |
 | **Revision** | 18 Glossary, 19 Twenty viva questions, 20 Final checklist |
 | **Appendices** | A Function index, B What exists, C Setup and run, D Seed data and logins, E Exporting diagrams, F Not Verified list |
 
@@ -40,8 +40,8 @@ Software Engineering course project, NMIMS Hyderabad (B.Tech CS & Data Science)
 | Item | Value |
 |---|---|
 | Analysis date | 23 Oct 2026 |
-| Source analysed | The working tree of the project folder. Last commit `051bbbc` ("Phase 9: final audit report"). **31 files have uncommitted changes**: the yellow-and-blue UI redesign. This document describes the working tree, including that redesign. Two untracked tooling items (`.agents/`, `skills-lock.json`) are not part of the application. |
-| Code size | About 1,436 lines of Python, 1,706 lines of HTML templates, 386 lines of CSS, 99 lines of JavaScript |
+| Source analysed | The project folder as committed on branch `main` (see `git log`). The `file:line` references were refreshed on 23 Oct 2026 against the code after the first-audit fixes (admin reassignment, POST logout, upload and decimal checks). Two untracked tooling items (`.agents/`, `skills-lock.json`) are not part of the application. |
+| Code size | About 1,561 lines of Python, 1,740 lines of HTML templates, 386 lines of CSS, 99 lines of JavaScript |
 | Python modules | 18 `.py` files, 20 HTML templates, 1 CSS file, 1 JS file |
 | HTTP routes | 22 (plus Flask's built-in `static` route) |
 | Database tables | 5 (`user`, `loan`, `repayment`, `document`, `loan_setting`) |
@@ -148,6 +148,8 @@ labelled framing and confirm it with the project team:
 workflow, repayments, admin and reports, polish; then a final audit (Phase 9) written into `PROGRESS.md`. The
 `CLAUDE.md` file is the design blueprint; `PROGRESS.md` is the build log with the plan, checks and decisions of each
 phase.
+A later session committed the yellow-and-blue redesign, fixed the issues of the audit (section 17.4) and added the `docs/`
+folder with the SRS, diagrams, CRC cards, wireframes and prototype screenshots.
 
 ---
 
@@ -197,7 +199,7 @@ MarkupSafe 3.0.4, Click 8.5.0, Blinker 1.9.0.
 
 ### 2.5 Development tools
 
-Git (9 commits), VS Code, PowerShell, a Python virtual environment `venv/`. **[Verified]**
+Git (the commits on `main`, one per build phase and then one per later change set), VS Code, PowerShell, a Python virtual environment `venv/`. **[Verified]**
 
 ### 2.6 What is NOT used
 
@@ -271,7 +273,7 @@ Browser  --HTTP-->  Flask app (create_app)
    nothing if the account is deactivated.
 5. The `@role_required("borrower")` wrapper (`app/utils/decorators.py:10`) checks login and role (redirect to login, or 403).
 6. The view loads the loan with ownership check `get_own_loan_or_404` (`borrower.py:15`).
-7. It calls `loan_service.pay_installment` (`loan_service.py:302`), which enforces the rules, updates rows, and commits.
+7. It calls `loan_service.pay_installment` (`loan_service.py:363`), which enforces the rules, updates rows, and commits.
 8. The view flashes a message and returns a redirect to the loan page.
 9. The browser follows the redirect with `GET /borrower/loans/2`; the view renders `borrower/loan_detail.html`
    through `base.html`; Jinja filters `inr` and `date` format money and dates; the HTML is returned.
@@ -292,7 +294,8 @@ micro-loan-system/
 ├── .gitignore                Ignores venv/, instance/, uploads/, .env, __pycache__/
 ├── run.py                    Entry point: creates the app and runs the dev server
 ├── seed.py                   Resets the database and loads demo users and loans
-├── config.py                 Config class: SECRET_KEY, database URI, upload folder, size limit
+├── config.py                 Config class: SECRET_KEY, database URI, upload folder, size limit, session cookie flags
+├── docs/                     SE documents: SRS, diagrams (PNG and SVG), CRC cards, wireframes, prototype screenshots
 ├── app/
 │   ├── __init__.py           create_app(): wiring, CSRF hook, error handlers, filters
 │   ├── models.py             The five database models and their methods
@@ -356,18 +359,18 @@ single-page-application framework: every page is rendered on the server.
 
 | Template | Shown by (route) | Extends | Shared macros it uses | Forms | Purpose |
 |---|---|---|---|---:|---|
-| `base.html` | (parent of all) | none | defines `nav_item` | 0 | Page frame: utility strip, header and role-based menu, flash alerts, footer, script tags. Blocks: `title`, `page`, `content`, `scripts` |
-| `macros.html` | (imported) | none | defines 8 macros (5.3) | 0 | Reusable pieces |
+| `base.html` | (parent of all) | none | defines `nav_item` | 1 (the Logout form, POST) | Page frame: utility strip, header and role-based menu, flash alerts, footer, script tags. Blocks: `title`, `page`, `content`, `scripts` |
+| `macros.html` | (imported) | none | defines 9 macros (5.3) | 0 | Reusable pieces |
 | `main/index.html` | `/` | base (`page` block) | none | 0 | Landing page: hero, example EMI, facts, steps, features, lifecycle, call to action |
 | `auth/login.html` | `/login` | base (`page`) | csrf_field, input_field | 1 | Split-screen login |
 | `auth/register.html` | `/register` | base (`page`) | csrf_field, input_field | 1 | Split-screen borrower sign-up |
-| `borrower/dashboard.html` | `/borrower/dashboard` | base | empty_state, progress_bar, status_badge | 0 | Active loan card, next installment, overdue alert, recent payments |
+| `borrower/dashboard.html` | `/borrower/dashboard` | base | apply_button, empty_state, progress_bar, status_badge | 0 | Active loan card, next installment, overdue alert, recent payments |
 | `borrower/apply.html` | `/borrower/apply` | base | breadcrumb, csrf_field, input_field | 1 | Application form and live EMI preview |
-| `borrower/loans.html` | `/borrower/loans` | base | breadcrumb, empty_state, status_badge | 0 | Table of the borrower's loans |
+| `borrower/loans.html` | `/borrower/loans` | base | apply_button, breadcrumb, empty_state, status_badge | 0 | Table of the borrower's loans |
 | `borrower/loan_detail.html` | `/borrower/loans/<id>` | base | breadcrumb, csrf_field, loan_stepper, progress_bar, schedule_table, status_badge | 1 (cancel) | Step tracker, facts, repayment summary, schedule with Pay button |
 | `officer/dashboard.html` | `/officer/dashboard` | base | empty_state, status_badge | 0 | Three counters and "my pending work" |
 | `officer/applications.html` | `/officer/applications` | base | breadcrumb, empty_state, status_badge | 1 (search, GET) | Filter tabs, search, table |
-| `officer/application_detail.html` | `/officer/applications/<id>` | base | breadcrumb, csrf_field, schedule_table, status_badge | 3 | Facts, affordability meter, decision card, status history |
+| `officer/application_detail.html` | `/officer/applications/<id>` | base | breadcrumb, csrf_field, schedule_table, status_badge | 4 (pick up, decision, disburse; reassign for the admin) | Facts, affordability meter, decision card, status history |
 | `admin/dashboard.html` | `/admin/dashboard` | base | status_badge | 0 | Totals and shortcuts |
 | `admin/users.html` | `/admin/users` | base | breadcrumb, csrf_field, empty_state | 2 | Role tabs, search, activate/deactivate |
 | `admin/new_officer.html` | `/admin/users/new-officer` | base | breadcrumb, csrf_field, input_field | 1 | Create officer |
@@ -399,6 +402,7 @@ single-page-application framework: every page is rendered on the server.
 | `breadcrumb(items)` | Breadcrumb trail |
 | `empty_state(icon, message, button_label, button_url, button_style)` | Friendly "nothing here" box with one button |
 | `progress_bar(done, total, label)` | "3 of 6" progress bar with a yellow tip |
+| `apply_button(has_active_loan)` | The "Apply for loan" action of the dashboard and My loans: a disabled button with the helper text "Available again once your current loan is closed." while a loan is active, an enabled yellow link otherwise |
 | `loan_stepper(loan)` | Step tracker: Applied, Under Review, Approved, Disbursed, Repaying, Closed (shorter for Rejected and Cancelled) |
 | `schedule_table(loan, pay_url)` | EMI schedule; overdue rows red; the **Pay** button only on the earliest Pending row |
 
@@ -419,7 +423,7 @@ single-page-application framework: every page is rendered on the server.
 | `inr` | `app/utils/formatters.py:4` | `100000` becomes `₹1,00,000.00` (Indian digit grouping) |
 | `inr_short` | `formatters.py:21` | `5000` becomes `₹5,000` (used in headlines) |
 | `date` | `formatters.py:27` | A date becomes `22 Oct 2026` |
-| global `csrf_token()` | `validators.py:16` (`get_csrf_token`) | Returns the session's CSRF token |
+| global `csrf_token()` | `validators.py:20` (`get_csrf_token`) | Returns the session's CSRF token |
 
 ### 5.5 Navigation by role
 
@@ -437,16 +441,16 @@ user sees; the HTML attributes (`required`, `type`, `maxlength`, `pattern`, `min
 
 | Form | Route | Fields | Server-side validation |
 |---|---|---|---|
-| Register | `POST /register` | name, email, phone, monthly_income, password, confirm_password | `validate_user_form` (`validators.py:92`): name required and at most 100; email pattern, at most 120, **unique**; phone exactly 10 digits; income a number above 0; password at least 8 characters with a letter and a digit; passwords match |
+| Register | `POST /register` | name, email, phone, monthly_income, password, confirm_password | `validate_user_form` (`validators.py:109`): name required and at most 100; email pattern, at most 120, **unique**; phone exactly 10 digits; income a number above 0; password at least 8 characters with a letter and a digit; passwords match |
 | Login | `POST /login` | email, password | Email lower-cased; user must exist, password must match, account must be active |
-| Apply for loan | `POST /borrower/apply` (multipart) | amount, tenure_months, purpose, document | `check_application` (`loan_service.py:135`): no active loan; amount within limits; tenure within limits and whole; purpose required and at most 200; document present, type, size; EMI within affordability limit |
+| Apply for loan | `POST /borrower/apply` (multipart) | amount, tenure_months, purpose, document | `check_application` (`loan_service.py:158`): no active loan; amount within limits; tenure within limits and whole; purpose required and at most 200; document present, type, size; EMI within affordability limit |
 | Review decision | `POST /officer/applications/<id>/approve` or `/reject` | remarks (textarea, at most 300) | Reject requires remarks; both limit length |
 | Pick up / Disburse | `POST .../pickup`, `.../disburse` | none | State machine and ownership rules |
 | Reassign (admin) | `POST /officer/applications/<id>/reassign` | officer_id (dropdown) | `reassign_loan`: admin only; loan Under Review or Approved; new officer active, an officer, and not the current one |
 | Pay | `POST /borrower/loans/<id>/pay` | repayment_id (hidden) | Must be the earliest Pending installment |
 | Cancel | `POST /borrower/loans/<id>/cancel` | none | Only the owner, only while Applied |
 | Create officer | `POST /admin/users/new-officer` | name, email, phone, password, confirm_password | Same as register, without income |
-| Loan settings | `POST /admin/settings` | interest_rate, min_amount, max_amount, min_tenure, max_tenure, max_emi_to_income | `validate_settings_form` (`validators.py:54`): rate 0 to 36; amounts above 0 and max above min; tenures whole, at least 1, max above min; EMI limit 1 to 100 |
+| Loan settings | `POST /admin/settings` | interest_rate, min_amount, max_amount, min_tenure, max_tenure, max_emi_to_income | `validate_settings_form` (`validators.py:67`): rate 0 to 36; amounts above 0 and max above min; tenures whole, at least 1, max above min; EMI limit 1 to 100 |
 | Activate/deactivate | `POST /admin/users/<id>/toggle` | none | Cannot deactivate yourself |
 | Search and filter | `GET /officer/applications`, `GET /admin/users` | q, status or role | Unknown status or role values are ignored |
 
@@ -512,7 +516,7 @@ two-line card so the Pay button never leaves the screen.
 | 1 | `/` | GET | `main.index` (`main.py:14`) | public | `get_settings`, `sample_loan` | HTML landing page |
 | 2 | `/documents/<id>` | GET | `main.view_document` (`main.py:22`) | role(borrower, officer, admin); a borrower must own the loan, else 404 | none (reads `Document`) | The file from `uploads/` |
 | 3 | `/register` | GET, POST | `auth.register` (`auth.py:14`) | public (logged-in users are redirected) | `create_user` | Form, or redirect to borrower dashboard |
-| 4 | `/login` | GET, POST | `auth.login` (`auth.py:31`) | public (logged-in users are redirected) | none (queries `User`) | Form, or redirect to the role's dashboard |
+| 4 | `/login` | GET, POST | `auth.login` (`auth.py:32`) | public (logged-in users are redirected) | none (queries `User`) | Form, or redirect to the role's dashboard |
 | 5 | `/logout` | POST | `auth.logout` (`auth.py:54`) | login required; CSRF token (a GET gives 405) | none | Redirect to `/` |
 | 6 | `/borrower/dashboard` | GET | `borrower.dashboard` (`borrower.py:25`) | role(borrower) | `borrower_summary` | HTML |
 | 7 | `/borrower/apply` | GET, POST | `borrower.apply` (`borrower.py:33`) | role(borrower) | `get_settings`, `apply_for_loan` | Form, or redirect to the new loan |
@@ -520,17 +524,17 @@ two-line card so the Pay button never leaves the screen.
 | 9 | `/borrower/loans/<id>` | GET | `borrower.loan_detail` (`borrower.py:64`) | role(borrower), owner only (else 404) | none | HTML |
 | 10 | `/borrower/loans/<id>/pay` | POST | `borrower.pay` (`borrower.py:72`) | role(borrower), owner only | `pay_installment` | Redirect to the loan page |
 | 11 | `/borrower/loans/<id>/cancel` | POST | `borrower.cancel` (`borrower.py:87`) | role(borrower), owner only | `cancel_loan` | Redirect to the loan page |
-| 12 | `/officer/dashboard` | GET | `officer.dashboard` (`officer.py:19`) | role(officer) | `officer_summary` | HTML |
-| 13 | `/officer/applications` | GET | `officer.applications` (`officer.py:27`) | role(officer, admin) | `search_loans` | HTML |
-| 14 | `/officer/applications/<id>` | GET | `officer.application_detail` (`officer.py:40`) | role(officer, admin) | `get_settings` | HTML (admin sees it read-only) |
-| 15 | `/officer/applications/<id>/<action>` | POST | `officer.application_action` (`officer.py:48`) | role(officer) only | `pick_up_loan`, `approve_loan`, `reject_loan`, `disburse_loan` | Redirect to the application page; unknown action gives 404 |
+| 12 | `/officer/dashboard` | GET | `officer.dashboard` (`officer.py:20`) | role(officer) | `officer_summary` | HTML |
+| 13 | `/officer/applications` | GET | `officer.applications` (`officer.py:28`) | role(officer, admin) | `search_loans` | HTML |
+| 14 | `/officer/applications/<id>` | GET | `officer.application_detail` (`officer.py:41`) | role(officer, admin) | `get_settings` | HTML (admin sees it read-only) |
+| 15 | `/officer/applications/<id>/<action>` | POST | `officer.application_action` (`officer.py:69`) | role(officer) only | `pick_up_loan`, `approve_loan`, `reject_loan`, `disburse_loan` | Redirect to the application page; unknown action gives 404 |
 | 16 | `/officer/applications/<id>/reassign` | POST | `officer.reassign_application` (`officer.py:53`) | role(admin) only | `reassign_loan` | Redirect to the application page (status unchanged) |
 | 17 | `/admin/dashboard` | GET | `admin.dashboard` (`admin.py:26`) | role(admin) | `admin_totals` | HTML |
 | 18 | `/admin/users` | GET | `admin.users` (`admin.py:33`) | role(admin) | `search_users` | HTML |
 | 19 | `/admin/users/new-officer` | GET, POST | `admin.new_officer` (`admin.py:44`) | role(admin) | `create_user` | Form, or redirect to the officer list |
-| 20 | `/admin/users/<id>/toggle` | POST | `admin.toggle_user` (`admin.py:58`) | role(admin) | `toggle_user_active` | Redirect to the user list |
-| 21 | `/admin/settings` | GET, POST | `admin.settings` (`admin.py:71`) | role(admin) | `get_settings`, `update_settings` | Form, or redirect to itself |
-| 22 | `/admin/reports` | GET | `admin.reports` (`admin.py:89`) | role(admin) | `admin_totals`, `disbursed_per_month`, `overdue_installments` | HTML with chart data |
+| 20 | `/admin/users/<id>/toggle` | POST | `admin.toggle_user` (`admin.py:59`) | role(admin) | `toggle_user_active` | Redirect to the user list |
+| 21 | `/admin/settings` | GET, POST | `admin.settings` (`admin.py:79`) | role(admin) | `get_settings`, `update_settings` | Form, or redirect to itself |
+| 22 | `/admin/reports` | GET | `admin.reports` (`admin.py:97`) | role(admin) | `admin_totals`, `disbursed_per_month`, `overdue_installments` | HTML with chart data |
 
 **Note on "API":** none of these routes returns JSON. The words "API" in the presentation should be read as
 "HTTP routes". **[Verified]**
@@ -740,21 +744,21 @@ document, which is consistent with one extra borrower account and one applicatio
 
 | # | Rule | Enforced in |
 |--:|---|---|
-| R1 | Amount between `min_amount` and `max_amount` | `check_application` (`loan_service.py:144`) |
-| R2 | Tenure a whole number of months between `min_tenure` and `max_tenure` | `check_application` (`loan_service.py:149`), `to_int` |
-| R3 | One active loan at a time (Applied, Under Review, Approved, Disbursed, Repaying) | `User.has_active_loan` (`models.py:38`), `check_application` (`loan_service.py:137`) |
-| R4 | EMI must be at most `max_emi_to_income` % of monthly income; the message shows the largest affordable amount | `check_affordability` (`loan_service.py:121`) |
+| R1 | Amount between `min_amount` and `max_amount` | `check_application` (`loan_service.py:169`) |
+| R2 | Tenure a whole number of months between `min_tenure` and `max_tenure` | `check_application` (`loan_service.py:174`), `to_int` |
+| R3 | One active loan at a time (Applied, Under Review, Approved, Disbursed, Repaying) | `User.has_active_loan` (`models.py:38`), `check_application` (`loan_service.py:160`) |
+| R4 | EMI must be at most `max_emi_to_income` % of monthly income; the message shows the largest affordable amount | `check_affordability` (`loan_service.py:144`) |
 | R5 | EMI by the reducing-balance formula, rounded to paise; last installment adjusted so the total equals EMI times n | `calculate_emi`, `build_schedule` (`emi.py:7`, `emi.py:36`) |
-| R6 | Interest rate is locked when applying; later settings changes affect only new loans | `apply_for_loan` copies `settings.interest_rate` (`loan_service.py:180`) |
-| R7 | Schedule created only at disbursal; installment *i* due on disbursal date plus *i* months (month-end safe) | `disburse_loan` (`loan_service.py:286`), `add_months` (`emi.py:27`) |
-| R8 | Only the earliest Pending installment can be paid | `pay_installment` (`loan_service.py:309`) |
+| R6 | Interest rate is locked when applying; later settings changes affect only new loans | `apply_for_loan` copies `settings.interest_rate` (`loan_service.py:205`) |
+| R7 | Schedule created only at disbursal; installment *i* due on disbursal date plus *i* months (month-end safe) | `disburse_loan` (`loan_service.py:311`), `add_months` (`emi.py:27`) |
+| R8 | Only the earliest Pending installment can be paid | `pay_installment` (`loan_service.py:370`) |
 | R9 | Overdue = Pending and past due date; computed; no late fee | `Repayment.is_overdue` (`models.py:103`) |
 | R10 | One document per application; PDF, JPG or PNG; at most 2 MB; the first bytes must match the type; renamed with a uuid | `check_document` (`loan_service.py:110`), `apply_for_loan` |
-| R11 | After pick-up, only the assigned officer can approve, reject or disburse; an admin can reassign an Under Review or Approved loan to another active officer (status unchanged) | `change_status` (`loan_service.py:50-52`), `reassign_loan` (`loan_service.py:343`) |
+| R11 | After pick-up, only the assigned officer can approve, reject or disburse; an admin can reassign an Under Review or Approved loan to another active officer (status unchanged) | `change_status` (`loan_service.py:52-54`), `reassign_loan` (`loan_service.py:343`) |
 
 ### 8.2 The loan state machine
 
-`ALLOWED_TRANSITIONS` (`loan_service.py:22`) is a dictionary whose keys are `(from status, to status)` and whose value is
+`ALLOWED_TRANSITIONS` (`loan_service.py:24`) is a dictionary whose keys are `(from status, to status)` and whose value is
 the **role** allowed to make that change. Any pair that is not in the dictionary is rejected with a clear `LoanError`.
 
 | From | To | Who | Extra checks in `change_status` | Side effects (set by the calling service function) |
@@ -823,7 +827,7 @@ the data exchanged, the result, and the source files. All entries are **[Verifie
 | Purpose | Explain the service to visitors, and show the live loan limits and a worked EMI example |
 | User steps | Open `/`. Click **Apply for a loan** (to register), **Login**, or scroll through the sections |
 | Front end | `main/index.html` (overrides the `page` block): hero, example card, facts strip, three steps, four feature tiles, lifecycle chips, call-to-action band, footer |
-| Back end | `main.index` (`main.py:14`) calls `get_settings()` and `sample_loan(settings)` (`loan_service.py:64`) |
+| Back end | `main.index` (`main.py:14`) calls `get_settings()` and `sample_loan(settings)` (`loan_service.py:66`) |
 | Database | `SELECT` the `loan_setting` row. No writes |
 | Data exchanged | Server to browser: HTML with limits (amount range, tenure range, rate, EMI limit) and an example EMI computed from them |
 | Result | A page whose numbers always match the admin's current settings. If the admin changes the rate to 14%, the example becomes ₹4,489.36 |
@@ -836,7 +840,7 @@ the data exchanged, the result, and the source files. All entries are **[Verifie
 | Purpose | Let a new borrower create an account. Nobody can choose their own role |
 | User steps | Open `/register`, fill name, email, phone, monthly income, password, confirm password, press **Create account** |
 | Front end | `auth/register.html`, macros `input_field` and `csrf_field` |
-| Back end | `auth.register` (`auth.py:14`): redirect away if already logged in; on POST `validate_user_form(request.form, with_income=True)` (`validators.py:92`); if no errors `loan_service.create_user(values, password, role="borrower")` (`loan_service.py:82`), then `login_user(user)`, flash, redirect to the borrower dashboard |
+| Back end | `auth.register` (`auth.py:14`): redirect away if already logged in; on POST `validate_user_form(request.form, with_income=True)` (`validators.py:109`); if no errors `loan_service.create_user(values, password, role="borrower")` (`loan_service.py:84`), then `login_user(user)`, flash, redirect to the borrower dashboard |
 | Database | `SELECT user WHERE email = ?` (uniqueness check); `INSERT user` with the password stored as a scrypt hash; `COMMIT` (rollback on error) |
 | Data exchanged | Browser to server: form fields plus `csrf_token`. Server to browser: on error, the same form (HTTP 200) with kept values and a message under each wrong field; on success, redirect (HTTP 302) |
 | Result | A logged-in borrower on the dashboard. The role is hard-coded as `"borrower"` in the route, so a `role` field in a forged request is ignored |
@@ -849,7 +853,7 @@ the data exchanged, the result, and the source files. All entries are **[Verifie
 | Purpose | Authenticate any of the three roles |
 | User steps | Open `/login`, enter email and password, press **Login** |
 | Front end | `auth/login.html` |
-| Back end | `auth.login` (`auth.py:31`): lower-case the email; load the user; `check_password`; reject deactivated accounts; `login_user(user)`; redirect to `dashboard_url(user)` |
+| Back end | `auth.login` (`auth.py:32`): lower-case the email; load the user; `check_password`; reject deactivated accounts; `login_user(user)`; redirect to `dashboard_url(user)` |
 | Database | `SELECT user WHERE email = ?`. No writes |
 | Data exchanged | Email, password, `csrf_token` to the server. Session cookie (signed) back to the browser |
 | Result | Borrower goes to `/borrower/dashboard`, officer to `/officer/dashboard`, admin to `/admin/dashboard`. Wrong credentials show "Invalid email or password." (same text for unknown email and wrong password). A deactivated account sees a different, clear message |
@@ -865,9 +869,9 @@ cannot log someone out; a plain GET gives 405. No database access.
 
 | Dashboard | Route and function | Data function | Content |
 |---|---|---|---|
-| Borrower | `/borrower/dashboard`, `borrower.dashboard` | `borrower_summary` (`loan_service.py:327`) | Active loan card, next installment, overdue alert, progress bar, last five payments, Apply button (disabled while a loan is active) |
-| Officer | `/officer/dashboard`, `officer.dashboard` | `officer_summary` (`loan_service.py:232`) | Counts: New (Applied), Under my review, Approved awaiting disbursal; table of "my pending work" |
-| Admin | `/admin/dashboard`, `admin.dashboard` | `admin_totals` (`loan_service.py:388`) | Users by role, loans by status, ₹ disbursed, ₹ collected, ₹ outstanding, overdue count |
+| Borrower | `/borrower/dashboard`, `borrower.dashboard` | `borrower_summary` (`loan_service.py:388`) | Active loan card, next installment, overdue alert, progress bar, last five payments, Apply button (disabled while a loan is active) |
+| Officer | `/officer/dashboard`, `officer.dashboard` | `officer_summary` (`loan_service.py:257`) | Counts: New (Applied), Under my review, Approved awaiting disbursal; table of "my pending work" |
+| Admin | `/admin/dashboard`, `admin.dashboard` | `admin_totals` (`loan_service.py:449`) | Users by role, loans by status, ₹ disbursed, ₹ collected, ₹ outstanding, overdue count |
 
 Database: read-only `SELECT`s on `loan`, `repayment` and `user`.
 
@@ -878,7 +882,7 @@ Database: read-only `SELECT`s on `loan`, `repayment` and `user`.
 | Purpose | Create a loan application that obeys rules R1 to R4, R6 and R10 |
 | User steps | Open **Apply for loan**. Type an amount and a tenure (the preview updates at once). Write a purpose. Choose a document. Press **Submit application** |
 | Front end | `borrower/apply.html`; `main.js` preview (reads `data-*` limits from the form); `input_field` with the ₹ prefix; if the borrower already has an active loan the form is replaced by a warning |
-| Back end | `borrower.apply` (`borrower.py:33`) converts text with `to_float` and `to_int`, then calls `apply_for_loan` (`loan_service.py:169`). That function loads settings, calls `check_application` (`:135`, which uses `check_document` `:104` and `check_affordability` `:121`), and if there are no errors builds the `Loan` (status Applied, rate copied from settings, EMI from `calculate_emi`), saves the file as `uploads/<uuid>.<ext>`, adds a `Document`, commits once. If the commit fails it rolls back **and deletes the file just written** |
+| Back end | `borrower.apply` (`borrower.py:33`) converts text with `to_float` and `to_int`, then calls `apply_for_loan` (`loan_service.py:194`). That function loads settings, calls `check_application` (`:135`, which uses `check_document` `:104` and `check_affordability` `:121`), and if there are no errors builds the `Loan` (status Applied, rate copied from settings, EMI from `calculate_emi`), saves the file as `uploads/<uuid>.<ext>`, adds a `Document`, commits once. If the commit fails it rolls back **and deletes the file just written** |
 | Database | `SELECT loan_setting`; `SELECT loan` rows of the borrower (active-loan check); `INSERT loan`; `INSERT document`; `COMMIT` |
 | Files on disk | One new file in `uploads/` |
 | Data exchanged | Multipart form: `amount`, `tenure_months`, `purpose`, `document`, `csrf_token`. Response: redirect to `/borrower/loans/<id>` with a success message; or the same page (HTTP 200) with an error under each wrong field (dictionary keys: `amount`, `tenure_months`, `purpose`, `document`, `form`) |
@@ -900,7 +904,7 @@ Database: read-only `SELECT`s on `loan`, `repayment` and `user`.
 ### F8. Cancel an application
 
 `POST /borrower/loans/<id>/cancel` (`borrower.cancel`, `borrower.py:87`) after a browser `confirm()` dialog:
-`get_own_loan_or_404`, then `cancel_loan` (`loan_service.py:205`) which calls `change_status(loan, "Cancelled", borrower)`
+`get_own_loan_or_404`, then `cancel_loan` (`loan_service.py:230`) which calls `change_status(loan, "Cancelled", borrower)`
 and commits. Allowed only for the owner and only while the status is **Applied**; otherwise a `LoanError` message is
 flashed. Database: `UPDATE loan SET status`.
 
@@ -910,7 +914,7 @@ flashed. Database: `UPDATE loan SET status`.
 |---|---|
 | Purpose | Find applications to work on |
 | User steps | Open **Applications**; click a status tab; type a borrower name or a loan id (`LN-0007`, `ln7` or `7`) and search |
-| Back end | `officer.applications` (`officer.py:27`): validates the `status` value against `STATUS_TABS`; calls `search_loans(status, text)` (`loan_service.py:217`). A text that looks like an id matches that loan; any other text is a case-insensitive part of the borrower's name |
+| Back end | `officer.applications` (`officer.py:28`): validates the `status` value against `STATUS_TABS`; calls `search_loans(status, text)` (`loan_service.py:242`). A text that looks like an id matches that loan; any other text is a case-insensitive part of the borrower's name |
 | Database | `SELECT loan JOIN user` with filters, newest first. No pagination (all matches) |
 | Access | Officers **and admins** (the admin view is read-only) |
 | Files | `officer.py`, `loan_service.py`, `officer/applications.html` |
@@ -922,7 +926,7 @@ flashed. Database: `UPDATE loan SET status`.
 | Purpose | Move an application through review under the state machine, with rule R11 |
 | User steps | Open an application. **Pick up for review** (Applied to Under Review). Then write optional remarks and press **Approve**, or write remarks (required) and press **Reject** after a confirm dialog |
 | Front end | `officer/application_detail.html` shows only the buttons that are valid for the current status and for this officer. Other officers see "Assigned to <name>. Only they can act." Admins see a read-only banner |
-| Back end | One POST route for all four actions: `officer.application_action` (`officer.py:48`) accepts `pickup`, `approve`, `reject`, `disburse` and gives 404 for anything else. It calls `pick_up_loan` (`:245`), `approve_loan` (`:256`) or `reject_loan` (`:270`); each calls `change_status` (`:39`) and commits once. **The server enforces the same rules as the screen**, so typing a URL cannot bypass them |
+| Back end | One POST route for all four actions: `officer.application_action` (`officer.py:69`) accepts `pickup`, `approve`, `reject`, `disburse` and gives 404 for anything else. It calls `pick_up_loan` (`:245`), `approve_loan` (`:256`) or `reject_loan` (`:270`); each calls `change_status` (`:39`) and commits once. **The server enforces the same rules as the screen**, so typing a URL cannot bypass them |
 | Database | `UPDATE loan` (`status`, `officer_id` on pick-up; `reviewed_on` and `remarks` on decision) |
 | Data exchanged | Optional `remarks` plus `csrf_token`. Redirect back to the application page with a flash message, or a red message if a rule is broken (for example "Please enter remarks explaining why the application is rejected.") |
 | Result | Status changes exactly as in the transition table; the borrower sees the new status and remarks on their loan page |
@@ -934,7 +938,7 @@ flashed. Database: `UPDATE loan SET status`.
 |---|---|
 | Purpose | Pay out an approved loan and create its repayment schedule |
 | User steps | The assigned officer opens an Approved application and presses **Disburse ₹X** (confirm dialog) |
-| Back end | `disburse_loan` (`loan_service.py:286`): `change_status(loan, "Disbursed", officer)`; `disbursed_on = today`; `build_schedule(loan, disbursed_on)` (`emi.py:36`) returns one row per month; a `Repayment` is appended for each; **one commit** saves the status and every installment together |
+| Back end | `disburse_loan` (`loan_service.py:311`): `change_status(loan, "Disbursed", officer)`; `disbursed_on = today`; `build_schedule(loan, disbursed_on)` (`emi.py:36`) returns one row per month; a `Repayment` is appended for each; **one commit** saves the status and every installment together |
 | Database | `UPDATE loan` (status, `disbursed_on`); `INSERT repayment` x n (all `Pending`) |
 | Result | A 12-month loan gets 12 rows, due on the disbursal day of each following month (month-end safe); the schedule total equals EMI times n to the paisa. The page shows the schedule |
 | Files | `loan_service.py`, `emi.py`, `application_detail.html`, `schedule_table` macro |
@@ -946,7 +950,7 @@ flashed. Database: `UPDATE loan SET status`.
 | Purpose | Let the borrower pay installments in order, and close the loan automatically |
 | User steps | On the loan page press **Pay** on the highlighted row, confirm the dialog |
 | Front end | `schedule_table` renders the Pay button **only** on the earliest Pending row, with a hidden `repayment_id` |
-| Back end | `borrower.pay` (`borrower.py:72`) calls `pay_installment` (`loan_service.py:302`): checks ownership, status (Disbursed or Repaying), and that `repayment_id` equals the earliest Pending row (rule R8); marks it Paid with today's date; on the first payment `change_status(loan, "Repaying", "system")`; if no installment is Pending, `change_status(loan, "Closed", "system")` and `closed_on = today`; **one commit** |
+| Back end | `borrower.pay` (`borrower.py:72`) calls `pay_installment` (`loan_service.py:363`): checks ownership, status (Disbursed or Repaying), and that `repayment_id` equals the earliest Pending row (rule R8); marks it Paid with today's date; on the first payment `change_status(loan, "Repaying", "system")`; if no installment is Pending, `change_status(loan, "Closed", "system")` and `closed_on = today`; **one commit** |
 | Database | `UPDATE repayment` (`status`, `paid_on`); `UPDATE loan` (`status`, and `closed_on` at the end) |
 | Result | Success message; after the last payment "Your loan is now closed!" and a success banner; the borrower can apply again |
 | Protection | Paying installment 3 before 2, paying twice, or paying someone else's loan is refused by the server |
@@ -957,7 +961,7 @@ flashed. Database: `UPDATE loan SET status`.
 `Repayment.is_overdue()` (`models.py:103`) returns true when `status == "Pending"` and `due_date < today`. It is evaluated
 whenever a page is built: red solid **Overdue** badge and red row in schedules, the alert on the borrower dashboard
 (`borrower_summary.overdue_count`), the admin total (`admin_totals`), and the admin report (`overdue_installments`,
-`loan_service.py:382`). There is no stored flag, no scheduler and no late fee.
+`loan_service.py:443`). There is no stored flag, no scheduler and no late fee.
 
 ### F14. Document upload and protected viewing
 
@@ -972,7 +976,7 @@ whenever a page is built: red solid **Overdue** badge and red row in schedules, 
 
 | Function | Route | Back end | Database |
 |---|---|---|---|
-| List, filter by role, search name or email | `GET /admin/users` | `search_users` (`loan_service.py:343`) | `SELECT user` with filters |
+| List, filter by role, search name or email | `GET /admin/users` | `search_users` (`loan_service.py:404`) | `SELECT user` with filters |
 | Create an officer | `POST /admin/users/new-officer` | `validate_user_form(with_income=False)` then `create_user(..., role="officer")` | `INSERT user` (income is empty) |
 | Activate or deactivate | `POST /admin/users/<id>/toggle` | `toggle_user_active` (`:354`): flips `is_active`; refuses for yourself | `UPDATE user SET is_active` |
 
@@ -980,16 +984,16 @@ A deactivated user cannot log in, and an already open session ends on the next r
 
 ### F16. Admin: loan settings
 
-`admin.settings` (`admin.py:71`). GET shows current values (numbers printed without trailing `.0`). POST runs
+`admin.settings` (`admin.py:79`). GET shows current values (numbers printed without trailing `.0`). POST runs
 `validate_settings_form` (rate 0 to 36; amounts above 0 and max above min; tenures whole, at least 1, max above min;
-EMI limit 1 to 100) and `update_settings` (`loan_service.py:366`) which writes all six fields and `updated_at`.
+EMI limit 1 to 100) and `update_settings` (`loan_service.py:427`) which writes all six fields and `updated_at`.
 **Existing loans keep the rate they were created with; only new applications, the apply page and the landing page use
 the new values.**
 
 ### F17. Admin: reports
 
-`admin.reports` (`admin.py:89`) builds three things: the status counts (pie chart; colours from `STATUS_COLORS`), the
-amount disbursed in each of the last six months (`disbursed_per_month`, `loan_service.py:408`), and the overdue
+`admin.reports` (`admin.py:97`) builds three things: the status counts (pie chart; colours from `STATUS_COLORS`), the
+amount disbursed in each of the last six months (`disbursed_per_month`, `loan_service.py:479`), and the overdue
 installments table (`overdue_installments`). The two chart datasets are placed in the page with `|tojson` and drawn by
 Chart.js from the CDN. Each chart has a "View as table" fallback. The pie keeps a counted legend beside it.
 
@@ -1068,12 +1072,12 @@ repaid" banner and apply again if needed.
 | Area | Mechanism | Where | Limit or note |
 |---|---|---|---|
 | Password storage | Salted **scrypt** hash from Werkzeug (`scrypt:32768:8:1`, about 162 characters). The plain password is never stored, logged or shown | `User.set_password` / `check_password` (`models.py:30,34`) | Verified by generating a hash in the project's environment |
-| Password policy | At least 8 characters with a letter and a digit | `validate_user_form` (`validators.py:122-125`) | No lockout or rate limit **[Verified: none in code]** |
+| Password policy | At least 8 characters with a letter and a digit | `validate_user_form` (`validators.py:139-142`) | No lockout or rate limit **[Verified: none in code]** |
 | Authentication | Flask-Login session cookie; deactivated users cannot log in and are logged out on the next request | `auth.login`, `load_user` | |
 | Authorisation | `@role_required` on every protected route; 403 for a wrong role; unauthenticated visitors are redirected to login | `decorators.py:10` | |
 | Ownership | A borrower can only open their own loans and documents; other ids return **404** | `get_own_loan_or_404`, `view_document` | |
-| State-machine enforcement | The server re-checks actor and ownership in `change_status`, so URL tampering cannot skip rules | `loan_service.py:39` | |
-| CSRF | One random token per session (`secrets.token_hex(16)`), embedded in every POST form, checked for every POST in a `before_request` hook with a constant-time comparison | `validators.py:16,23`, `__init__.py:71` | Hand-written (no library). During the audit, token-less POSTs to every POST route in all three roles changed nothing in the database |
+| State-machine enforcement | The server re-checks actor and ownership in `change_status`, so URL tampering cannot skip rules | `loan_service.py:41` | |
+| CSRF | One random token per session (`secrets.token_hex(16)`), embedded in every POST form, checked for every POST in a `before_request` hook with a constant-time comparison | `validators.py:20,23`, `__init__.py:71` | Hand-written (no library). During the audit, token-less POSTs to every POST route in all three roles changed nothing in the database |
 | XSS | Jinja2 auto-escaping on all output; chart data inserted with `|tojson` | all templates | Tested: a `<script>` tag in the purpose field is shown as text |
 | SQL injection | SQLAlchemy ORM with bound parameters; search uses `ilike` with a bound value | `loan_service.py` | No raw SQL anywhere **[Verified by reading]** |
 | File uploads | Extension whitelist, size limit (2 MB, plus a 3 MB request cap), the first bytes must match PDF / PNG / JPEG, uuid file name, stored outside `static/`, served only through a protected route | `check_document`, `apply_for_loan`, `main.view_document` | Content is not scanned; a text file renamed `.pdf` would be accepted |
@@ -1094,7 +1098,7 @@ repaid" banner and apply again if needed.
 | Not logged in | `login_manager.unauthorized()` | Redirect to `/login` with "Please log in to continue." | `decorators.py`, `__init__.py:12-14` |
 | Wrong role | `abort(403)` | The styled 403 page | `decorators.py:20`, handler `__init__.py:83` |
 | Missing record, or another borrower's record | `db.get_or_404` and `abort(404)` | The styled 404 page | routes, handler `__init__.py:88` |
-| Unknown officer action in the URL | `abort(404)` | 404 page | `officer.py:66` |
+| Unknown officer action in the URL | `abort(404)` | 404 page | `officer.py:87` |
 | Missing or wrong CSRF token | `check_csrf` | Warning "Your form expired or was invalid. Please try again." and a redirect back | `__init__.py:71` |
 | Upload larger than 3 MB | HTTP 413 handled by `too_large` | Red message "The file is too large. The maximum size is 2 MB." and back to the form | `__init__.py:93` |
 | Database error during a write | Every service write is in `try/except` with `db.session.rollback()`, then the error is re-raised | A 500 page | `loan_service.py` (all write functions) |
@@ -1111,6 +1115,7 @@ payment with the status change). If anything fails, nothing is saved (NFR9 in `C
 
 All diagrams are derived from the code described in sections 3 to 13. Mermaid source is given so that each one can
 be edited and rendered. Names in the diagrams (functions, tables, routes) are the real names in the project.
+The maintained set, as PNG and SVG, is in the `docs/` folder (see `docs/README.md`).
 
 ### 14.0 Notes on notation
 
@@ -1443,7 +1448,7 @@ flowchart LR
   P25 -->|"loan id and confirmation"| B
 ```
 
-Order of checks in the code (`check_application`, `loan_service.py:135`): active loan, then amount, tenure and purpose, then
+Order of checks in the code (`check_application`, `loan_service.py:158`): active loan, then amount, tenure and purpose, then
 document, then affordability only if amount and tenure are valid. All errors are returned together as one dictionary.
 
 #### Level 2: Process 3 "Review Loan"
@@ -2171,7 +2176,392 @@ stateDiagram-v2
 
 ---
 
-### 14.13 Where each diagram goes in the presentation
+### 14.13 Swimlane diagrams (added after the first audit)
+
+**Purpose:** show who does what. Each vertical lane is one actor (Borrower, System, Loan Officer, Admin); time runs downwards; an
+arrow that crosses a lane border is a hand-over. **Slide:** 17a. Exported PNG and SVG files are in `docs/diagrams/`
+(`05_swimlane_loan_lifecycle`, `05b_swimlane_pay_installment`); the explanation, step by step, is in `docs/02_diagrams.md`
+section 6. The dotted arrows are the optional admin reassignment.
+
+#### Full loan lifecycle (apply, review, reassign, disburse, repay, close)
+
+```mermaid
+%%{init: {"flowchart": {"rankSpacing": 22, "nodeSpacing": 18}}}%%
+flowchart TB
+  subgraph ADM["Admin"]
+    direction TB
+    ADM_g0[" "]:::ghost
+    ADM_g1[" "]:::ghost
+    ADM_g2[" "]:::ghost
+    ADM_g3[" "]:::ghost
+    ADM_g4[" "]:::ghost
+    ADM_g5[" "]:::ghost
+    ADM_g6[" "]:::ghost
+    A1["Reassign to another<br/>active officer<br/>(Under Review or Approved,<br/>status unchanged)"]
+    ADM_g8[" "]:::ghost
+    ADM_g9[" "]:::ghost
+    ADM_g10[" "]:::ghost
+    ADM_g11[" "]:::ghost
+    ADM_g12[" "]:::ghost
+    ADM_g13[" "]:::ghost
+    ADM_g14[" "]:::ghost
+    ADM_g15[" "]:::ghost
+    ADM_g16[" "]:::ghost
+    ADM_g17[" "]:::ghost
+  end
+  subgraph OFF["Loan Officer"]
+    direction TB
+    OFF_g0[" "]:::ghost
+    OFF_g1[" "]:::ghost
+    OFF_g2[" "]:::ghost
+    OFF_g3[" "]:::ghost
+    OFF_g4[" "]:::ghost
+    O1["Pick up<br/>the application"]
+    OFF_g6[" "]:::ghost
+    OFF_g7[" "]:::ghost
+    O2["Review the details<br/>and the document"]
+    O3{"Decision"}
+    OFF_g10[" "]:::ghost
+    OFF_g11[" "]:::ghost
+    O4["Disburse<br/>(confirm)"]
+    OFF_g13[" "]:::ghost
+    OFF_g14[" "]:::ghost
+    OFF_g15[" "]:::ghost
+    OFF_g16[" "]:::ghost
+    OFF_g17[" "]:::ghost
+  end
+  subgraph SYS["System"]
+    direction TB
+    SYS_g0[" "]:::ghost
+    SYS_g1[" "]:::ghost
+    S2{"R1 to R4 and R10<br/>all pass?"}
+    S3["Save the loan:<br/>status Applied,<br/>EMI and rate locked"]
+    SYS_g4[" "]:::ghost
+    S4(["Status: Cancelled"])
+    S5["Status: Under Review,<br/>officer saved"]
+    SYS_g7[" "]:::ghost
+    SYS_g8[" "]:::ghost
+    SYS_g9[" "]:::ghost
+    S6(["Status: Rejected,<br/>remarks saved"])
+    S7["Status: Approved,<br/>review date saved"]
+    SYS_g12[" "]:::ghost
+    S8["Build n installments,<br/>status Disbursed<br/>(one commit)"]
+    SYS_g14[" "]:::ghost
+    S9["Mark it Paid;<br/>first payment:<br/>status Repaying"]
+    S10{"Any installment<br/>still Pending?"}
+    S11(["Status: Closed,<br/>closed date saved"])
+  end
+  subgraph BOR["Borrower"]
+    direction TB
+    BOR_g0[" "]:::ghost
+    B1["Register or log in,<br/>fill in the application,<br/>submit it"]
+    BOR_g2[" "]:::ghost
+    B1b(["Correct the form<br/>and submit again"])
+    B2{"Cancel before<br/>pick-up?"}
+    BOR_g5[" "]:::ghost
+    BOR_g6[" "]:::ghost
+    BOR_g7[" "]:::ghost
+    BOR_g8[" "]:::ghost
+    BOR_g9[" "]:::ghost
+    BOR_g10[" "]:::ghost
+    BOR_g11[" "]:::ghost
+    BOR_g12[" "]:::ghost
+    BOR_g13[" "]:::ghost
+    B5["Pay the earliest<br/>pending installment"]
+    BOR_g15[" "]:::ghost
+    BOR_g16[" "]:::ghost
+    B5r(["Pay the next one<br/>(repeat until<br/>none is left)"])
+  end
+  BOR_g0 ~~~ B1
+  B1 ~~~ BOR_g2
+  BOR_g2 ~~~ B1b
+  B1b ~~~ B2
+  B2 ~~~ BOR_g5
+  BOR_g5 ~~~ BOR_g6
+  BOR_g6 ~~~ BOR_g7
+  BOR_g7 ~~~ BOR_g8
+  BOR_g8 ~~~ BOR_g9
+  BOR_g9 ~~~ BOR_g10
+  BOR_g10 ~~~ BOR_g11
+  BOR_g11 ~~~ BOR_g12
+  BOR_g12 ~~~ BOR_g13
+  BOR_g13 ~~~ B5
+  B5 ~~~ BOR_g15
+  BOR_g15 ~~~ BOR_g16
+  BOR_g16 ~~~ B5r
+  SYS_g0 ~~~ SYS_g1
+  SYS_g1 ~~~ S2
+  S3 ~~~ SYS_g4
+  SYS_g4 ~~~ S4
+  S4 ~~~ S5
+  S5 ~~~ SYS_g7
+  SYS_g7 ~~~ SYS_g8
+  SYS_g8 ~~~ SYS_g9
+  SYS_g9 ~~~ S6
+  S6 ~~~ S7
+  S7 ~~~ SYS_g12
+  SYS_g12 ~~~ S8
+  S8 ~~~ SYS_g14
+  SYS_g14 ~~~ S9
+  OFF_g0 ~~~ OFF_g1
+  OFF_g1 ~~~ OFF_g2
+  OFF_g2 ~~~ OFF_g3
+  OFF_g3 ~~~ OFF_g4
+  OFF_g4 ~~~ O1
+  O1 ~~~ OFF_g6
+  OFF_g6 ~~~ OFF_g7
+  OFF_g7 ~~~ O2
+  O3 ~~~ OFF_g10
+  OFF_g10 ~~~ OFF_g11
+  OFF_g11 ~~~ O4
+  O4 ~~~ OFF_g13
+  OFF_g13 ~~~ OFF_g14
+  OFF_g14 ~~~ OFF_g15
+  OFF_g15 ~~~ OFF_g16
+  OFF_g16 ~~~ OFF_g17
+  ADM_g0 ~~~ ADM_g1
+  ADM_g1 ~~~ ADM_g2
+  ADM_g2 ~~~ ADM_g3
+  ADM_g3 ~~~ ADM_g4
+  ADM_g4 ~~~ ADM_g5
+  ADM_g5 ~~~ ADM_g6
+  ADM_g6 ~~~ A1
+  A1 ~~~ ADM_g8
+  ADM_g8 ~~~ ADM_g9
+  ADM_g9 ~~~ ADM_g10
+  ADM_g10 ~~~ ADM_g11
+  ADM_g11 ~~~ ADM_g12
+  ADM_g12 ~~~ ADM_g13
+  ADM_g13 ~~~ ADM_g14
+  ADM_g14 ~~~ ADM_g15
+  ADM_g15 ~~~ ADM_g16
+  ADM_g16 ~~~ ADM_g17
+  B1 --> S2
+  S2 -->|"No: errors shown"| B1b
+  S2 -->|"Yes"| S3
+  S3 --> B2
+  B2 -->|"Yes"| S4
+  B2 -->|"No"| O1
+  O1 --> S5
+  S5 --> O2
+  S5 -.->|"officer unavailable"| A1
+  A1 -.->|"new officer"| O2
+  O2 --> O3
+  O3 -->|"Reject (remarks)"| S6
+  O3 -->|"Approve"| S7
+  S7 --> O4
+  O4 --> S8
+  S8 --> B5
+  B5 --> S9
+  S9 --> S10
+  S10 -->|"Yes"| B5r
+  S10 -->|"No"| S11
+  classDef ghost fill:none,stroke:none,color:none;
+  style BOR fill:#E8F0FE,stroke:#9AA7BD,stroke-width:1px
+  style SYS fill:#F4F6FA,stroke:#9AA7BD,stroke-width:1px
+  style OFF fill:#FFF6D6,stroke:#9AA7BD,stroke-width:1px
+  style ADM fill:#EAF5EC,stroke:#9AA7BD,stroke-width:1px
+```
+
+#### Pay an installment (Borrower and System)
+
+```mermaid
+%%{init: {"flowchart": {"rankSpacing": 22, "nodeSpacing": 18}}}%%
+flowchart TB
+  subgraph SYS["System"]
+    direction TB
+    SYS_g0[" "]:::ghost
+    SYS_g1[" "]:::ghost
+    S1{"Is it the<br/>borrower's loan?"}
+    S2{"Status Disbursed<br/>or Repaying?"}
+    S3{"Earliest Pending<br/>installment?"}
+    S4["Mark it Paid,<br/>paid date = today"]
+    S5{"First payment?"}
+    S6["Status: Repaying"]
+    S7{"Any installment<br/>still Pending?"}
+    S8["Status: Closed,<br/>closed date saved"]
+    S9["One commit<br/>(rollback on error)"]
+    SYS_g11[" "]:::ghost
+  end
+  subgraph BOR["Borrower"]
+    direction TB
+    BOR_g0[" "]:::ghost
+    B1["Press Pay on the<br/>highlighted row and<br/>confirm the dialog"]
+    BOR_g2[" "]:::ghost
+    B2(["404 page"])
+    B3(["Message:<br/>nothing to pay"])
+    B4(["Message:<br/>pay in order"])
+    BOR_g6[" "]:::ghost
+    BOR_g7[" "]:::ghost
+    BOR_g8[" "]:::ghost
+    BOR_g9[" "]:::ghost
+    BOR_g10[" "]:::ghost
+    B5(["Success message and<br/>the updated schedule"])
+  end
+  BOR_g0 ~~~ B1
+  B1 ~~~ BOR_g2
+  BOR_g2 ~~~ B2
+  B2 ~~~ B3
+  B3 ~~~ B4
+  B4 ~~~ BOR_g6
+  BOR_g6 ~~~ BOR_g7
+  BOR_g7 ~~~ BOR_g8
+  BOR_g8 ~~~ BOR_g9
+  BOR_g9 ~~~ BOR_g10
+  BOR_g10 ~~~ B5
+  SYS_g0 ~~~ SYS_g1
+  SYS_g1 ~~~ S1
+  S9 ~~~ SYS_g11
+  B1 --> S1
+  S1 -->|"No"| B2
+  S1 -->|"Yes"| S2
+  S2 -->|"No"| B3
+  S2 -->|"Yes"| S3
+  S3 -->|"No"| B4
+  S3 -->|"Yes"| S4
+  S4 --> S5
+  S5 -->|"Yes"| S6
+  S5 -->|"No"| S7
+  S6 --> S7
+  S7 -->|"No"| S8
+  S7 -->|"Yes"| S9
+  S8 --> S9
+  S9 --> B5
+  classDef ghost fill:none,stroke:none,color:none;
+  style BOR fill:#E8F0FE,stroke:#9AA7BD,stroke-width:1px
+  style SYS fill:#F4F6FA,stroke:#9AA7BD,stroke-width:1px
+```
+
+Both diagrams use one subgraph per lane. Invisible helper nodes keep every lane in the same row grid so the lanes line up
+(Mermaid has no native swimlane).
+
+---
+
+### 14.14 CRC cards (added after the first audit)
+
+**Slide:** 20a. Same cards as `docs/02_diagrams.md` section 4. The method names are the real ones in the code.
+
+**Purpose.** One card per class: what it knows and does (**Responsibilities**) and which other classes it works with
+(**Collaborators**). The method names are the real ones in the code. The first five are the database models
+(`app/models.py`); `LoanService` is the module `app/services/loan_service.py` and `EMICalculator` is the module
+`app/services/emi.py` (see the notation notes at the top).
+
+#### User (model, `app/models.py:13`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Know who a person is: `name`, `email` (unique, lower case), `phone`, `role` (borrower, officer or admin), `monthly_income` (borrowers only), `is_active`, `created_at` | `Loan` (as borrower and as reviewing officer) |
+| Store the password only as a hash: `set_password()` | `werkzeug.security` (scrypt hashing) |
+| Check a password at login: `check_password()` | `auth.login` route |
+| Tell whether the borrower already has a loan in Applied, Under Review, Approved, Disbursed or Repaying: `has_active_loan()` | `Loan`, `LoanService.check_application`, `macros.apply_button` |
+| Be loadable from the session and be blocked when deactivated: `load_user()` | Flask-Login (`UserMixin`), `LoanService.toggle_user_active` |
+
+#### Loan (model, `app/models.py:43`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold one application: `amount`, `tenure_months`, `interest_rate` (locked at apply time), `emi_amount`, `purpose`, `status`, `remarks`, `applied_on`, `reviewed_on`, `disbursed_on`, `closed_on` | `LoanSetting` (the rate is copied from it), `EMICalculator` (the EMI is calculated by it) |
+| Know its borrower (`borrower_id`) and its reviewing officer (`officer_id`, set at pick-up, changed only by an admin reassignment) | `User` |
+| Total up the money: `total_payable()`, `amount_paid()`, `outstanding()` | `Repayment` |
+| Find the installment to pay next: `next_due_installment()` | `Repayment`, `LoanService.pay_installment` |
+| Show a friendly id such as LN-0006: `display_id()` | Templates |
+| Have its status changed only through the state machine | `LoanService.change_status` |
+
+#### Repayment (model, `app/models.py:92`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Represent one EMI installment: `installment_no`, `due_date`, `amount`, `status` (Pending or Paid), `paid_on` | `Loan` (owner) |
+| Say whether it is overdue (Pending and due date before today); computed, never stored: `is_overdue()` | `macros.schedule_table`, `LoanService.overdue_installments` |
+| Be created in a batch when a loan is disbursed | `EMICalculator.build_schedule`, `LoanService.disburse_loan` |
+| Be marked Paid in order | `LoanService.pay_installment` |
+
+#### Document (model, `app/models.py:108`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Link one supporting file to a loan: `original_name` (for display), `stored_name` (uuid plus extension), `uploaded_on` | `Loan` (exactly one per application, by code rule) |
+| Point to a file kept outside `static/` in `uploads/` | `uploads/` folder, `main.view_document` (the only way to download it) |
+| Be created only after the file passed the checks | `LoanService.check_document`, `LoanService.apply_for_loan` |
+
+#### LoanSetting (model, `app/models.py:118`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold the one global settings row (id 1): `interest_rate`, `min_amount`, `max_amount`, `min_tenure`, `max_tenure`, `max_emi_to_income`, `updated_at` | `LoanService.get_settings`, `LoanService.update_settings` |
+| Provide the limits used to validate every application | `LoanService.check_application`, `check_affordability` |
+| Provide the rate that is copied into a new loan (old loans keep their own) | `Loan` |
+| Be edited and validated by the admin | `admin.settings` route, `validators.validate_settings_form` |
+| Supply the live limits and sample EMI on the landing and apply pages | `main.index`, `borrower.apply` |
+
+#### LoanService (module `loan_service`, `app/services/loan_service.py`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Keep every business rule and status change in one place; routes only call it | All route blueprints, `LoanError` |
+| Enforce the state machine: `ALLOWED_TRANSITIONS`, `change_status(loan, new_status, actor)` | `Loan` |
+| Validate and create an application: `check_application()`, `check_document()`, `check_affordability()`, `apply_for_loan()`, `cancel_loan()` | `EMICalculator`, `LoanSetting`, `User`, `Document`, `validators.has_too_many_decimals` |
+| Move a loan through review and payout: `pick_up_loan()`, `approve_loan()`, `reject_loan()`, `disburse_loan()` | `Loan`, `Repayment`, `EMICalculator.build_schedule` |
+| Hand a loan to another officer: `reassign_loan()`, `active_officers()`, `pending_loan_count()` | `User`, `Loan` |
+| Take payments in order and update the status: `pay_installment()` | `Repayment`, `Loan` |
+| Manage accounts and settings: `create_user()`, `toggle_user_active()`, `update_settings()` | `User`, `LoanSetting` |
+| Prepare dashboard and report numbers: `borrower_summary()`, `officer_summary()`, `admin_totals()`, `disbursed_per_month()`, `overdue_installments()`, `percent_shares()` | `Loan`, `Repayment`, `User` |
+| Commit once per action and roll back on any error | `db.session` (Flask-SQLAlchemy) |
+
+#### EMICalculator (module `emi`, `app/services/emi.py`)
+
+| Responsibilities | Collaborators |
+|---|---|
+| Calculate the EMI with the reducing-balance formula, rounded to 2 decimals (rate 0 gives P / n): `calculate_emi()` | `LoanService.check_application`, `apply_for_loan`, `main.js` (same formula for the live preview) |
+| Work out the largest amount a borrower can afford: `max_affordable_amount()` | `LoanService.check_affordability` |
+| Add months safely (31 Jan + 1 month = 28 Feb): `add_months()` | `build_schedule` |
+| Build the installment list at disbursal, last one adjusted so the total is exactly EMI x n: `build_schedule()` | `LoanService.disburse_loan`, `Repayment` |
+| Do pure arithmetic with no database access | (none) |
+
+---
+
+### 14.15 Diagrams updated after the first audit
+
+Sections 14.4 to 14.12 describe the code at the time of the documentation commit. Since then the admin can reassign an
+application (`reassign_loan`), logout became a POST, and uploads and amounts are checked more strictly. The maintained, complete set (use case with the generalised *Signed-in user* actor, activity, class, state, DFD level 0 to 2 including
+process 3.4 *Reassign officer*, and five sequence diagrams) is in `docs/02_diagrams.md`. The new sequence diagram is shown here.
+
+#### S7. Admin reassigns an application (slide 16 or 21)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor A as Admin
+  participant B as Browser
+  participant H as check_csrf hook
+  participant R as officer.reassign_application
+  participant S as loan_service
+  participant DB as SQLite
+  A->>B: Open an Under Review or Approved application
+  B->>R: GET /officer/applications/id
+  R->>S: active_officers(exclude the current officer)
+  R-->>B: Page with the Reassign to dropdown
+  A->>B: Choose an officer, press Reassign, confirm the dialog
+  B->>H: POST /officer/applications/id/reassign with officer_id and csrf_token
+  H->>R: token valid, role_required admin passes (an officer or borrower gets 403)
+  R->>DB: Load the loan (404 if missing) and the chosen officer
+  R->>S: reassign_loan(loan, new_officer, admin)
+  S->>S: Checks: admin, status, active officer, not the current one
+  alt a check fails
+    S-->>R: LoanError
+    R-->>B: 302 to the application page with a red message
+  else all checks pass
+    S->>DB: UPDATE loan SET officer_id, COMMIT (rollback on error)
+    R-->>B: 302 to the application page: reassigned from the old to the new officer
+  end
+  Note over R,S: Status unchanged. New officer owns the loan (R11),<br/>the old officer is refused.
+```
+
+Reassignment is **not** a state-machine transition: only `officer_id` changes and the status stays Under Review or Approved.
+
+---
+
+### 14.16 Where each diagram goes in the presentation
 
 | Diagram | Section | Slide(s) |
 |---|---|---|
@@ -2187,12 +2577,18 @@ stateDiagram-v2
 | Sequence diagrams S1 to S6 | 14.10 | 16 (S1, S2 and S3 at least), 21 (S4, S5, S6) |
 | Activity diagrams A1 to A5 | 14.11 | 17 |
 | State diagrams | 14.12 | 11 |
+| Swimlane diagrams | 14.13 | 17a |
+| CRC cards | 14.14 | 20a |
+| Reassignment sequence S7 | 14.15 | 16 or 21 |
+| Wireframes and prototype screenshots | `docs/03_wireframes_and_prototype.md` | 10a |
 
 ---
 
 ## 15. PowerPoint plan, slide by slide
 
-The structure follows the 27 slides requested. It fits this project without changes; the live demo is folded into slide 11
+The structure follows the 27 slides requested, plus four slides added after the first audit and the assignment
+checklist: **9a Requirements**, **10a Wireframes and prototype**, **17a Swimlane diagram** and **20a CRC cards** (31 slides in
+all; the letters keep the numbers of the original 27 unchanged). It fits this project without changes; the live demo is folded into slide 11
 (and can be given its own slide if time allows). For each slide: bullets, visual, concepts to explain, speaker notes, and
 source references. Placeholders in square brackets (team names, guide name) are **Not in the repository**.
 
@@ -2212,6 +2608,9 @@ source references. Placeholders in square brackets (team names, guide name) are 
 | A phone-width view of the loan page | `/borrower/loans/2` at 390 px width | aman@example.com |
 
 (Loan ids 1 to 7 follow the seed order; ids and dates are relative to the day the seed was run.)
+
+Ready-made screenshots of the real pages at 1360 px and 390 px, taken from a temporary copy of the app with the seeded demo
+accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wireframes are in `docs/wireframes/`.
 
 ---
 
@@ -2261,7 +2660,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Visual:** the loan lifecycle chips from the landing page (Applied, Under Review, Approved, Disbursed, Repaying, Closed, plus Rejected and Cancelled).
 - **Concepts:** *Role-based access*, *state machine* (a fixed set of allowed status changes).
 - **Speaker notes:** "Every loan moves through the same visible stages, and the system refuses any other move."
-- **Source:** `loan_service.py:22` (`ALLOWED_TRANSITIONS`); section 8 of this document.
+- **Source:** `loan_service.py:24` (`ALLOWED_TRANSITIONS`); section 8 of this document.
 
 ### Slide 7. Technology stack
 
@@ -2298,6 +2697,14 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Speaker notes:** One sentence per module; point to the file names so the examiner can open them.
 - **Source:** section 6.
 
+### Slide 9a. Requirements (SRS)
+
+- **Bullets:** 58 functional requirements in 8 modules (FR-01 to FR-58); 16 non-functional requirements, each with a number that can be checked (for example every page in under 2 seconds, 384 status combinations tried); the 11 business rules R1 to R11; a traceability matrix from requirement to route, diagram and test.
+- **Visual:** one module table of the SRS (for example 4.3 Review, disbursal and reassignment) and a short part of the traceability matrix.
+- **Concepts:** *Functional vs non-functional requirement*, *acceptance criterion*, *traceability*, *MoSCoW priority*.
+- **Speaker notes:** Show one requirement (FR-30, admin reassignment) and follow it to its route, its diagram and its test.
+- **Source:** `docs/01_SRS_requirements.md`.
+
 ### Slide 10. Website user interface
 
 - **Bullets:** One consistent theme (blue for structure, yellow for the one next action); same status colours everywhere; step tracker and progress bar; responsive (phones get a vertical tracker and card-style schedule rows); accessible (text contrast, focus ring).
@@ -2306,13 +2713,21 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Speaker notes:** Do not read the list; show two screens and point at the yellow button and the tracker.
 - **Source:** `app/static/css/style.css`; `app/templates/macros.html`; `CLAUDE.md` section 9a.
 
+### Slide 10a. Wireframes and prototype
+
+- **Bullets:** Grey wireframes with numbered elements for 11 pages (plus two phone layouts) fix the structure first; the prototype is the real running page at 1360 px and 390 px; the differences (colour, tracker, badges) are explained with the Laws of UX.
+- **Visual:** a wireframe next to its prototype screenshot (apply page or loan details); navigation map of one role.
+- **Concepts:** *Low-fidelity wireframe*, *prototype*, *navigation map*, *Laws of UX*.
+- **Speaker notes:** Point at element 8 of the apply wireframe (the one primary button) and show it as the yellow button in the prototype.
+- **Source:** `docs/03_wireframes_and_prototype.md`; `docs/wireframes/`; `docs/prototype/`.
+
 ### Slide 11. Functional workflow
 
 - **Bullets:** Register, apply, officer picks up, approves, disburses (12 installments created), borrower pays, loan becomes Repaying, then Closed; reject and cancel branches.
 - **Visual:** state diagram (14.12) beside the numbered table in section 10.1.
 - **Concepts:** *Status transition*; *who may do what*; *one commit per action*.
 - **Speaker notes:** This is the best place for the **live demo** (about 4 minutes): register, apply ₹50,000 for 12 months (EMI ₹4,442.44), log in as officer1 to pick up, approve and disburse, log in as the borrower to pay installment 1, then show the admin report.
-- **Source:** `loan_service.py:22-30, 39-54`; section 10.1.
+- **Source:** `loan_service.py:24-32, 39-54`; section 10.1.
 
 ### Slide 12. Data Flow Diagram, Level 0
 
@@ -2336,7 +2751,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Visual:** the two Level 2 diagrams in 14.6 (process 2 and process 5), others in backup slides.
 - **Concepts:** *Balancing* (same inputs and outputs as the parent).
 - **Speaker notes:** For process 2 name the order of checks: active loan, fields, document, affordability. For process 5: owner, status, order, then mark paid, then update status.
-- **Source:** `check_application` (`loan_service.py:135`); `pay_installment` (`:302`).
+- **Source:** `check_application` (`loan_service.py:158`); `pay_installment` (`:302`).
 
 ### Slide 15. Use case diagram
 
@@ -2352,7 +2767,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Visual:** S2 (apply) large; S1 and S3 smaller or on a second slide.
 - **Concepts:** *Lifeline*, *message*, *alt fragment* (alternative paths), *commit*.
 - **Speaker notes:** In S2 point out that the browser previews the EMI itself, and the server checks everything again.
-- **Source:** `borrower.py:33`; `loan_service.py:169`.
+- **Source:** `borrower.py:33`; `loan_service.py:194`.
 
 ### Slide 17. Activity diagram
 
@@ -2361,6 +2776,14 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Concepts:** *Decision node*, *guard*, *activity*.
 - **Speaker notes:** Note that all errors of the apply form are collected and shown together.
 - **Source:** `check_application`; section 14.11.
+
+### Slide 17a. Swimlane diagram
+
+- **Bullets:** Four lanes: Borrower, System, Loan Officer, Admin; from application to Closed in one picture; the admin's reassignment as a dotted detour; a smaller swimlane for paying an installment.
+- **Visual:** `05_swimlane_loan_lifecycle` (tall; give it a full slide) and `05b_swimlane_pay_installment` as a backup.
+- **Concepts:** *Swimlane*, *hand-over between actors*, *decision node*.
+- **Speaker notes:** Follow one loan down the diagram and say who acts in each lane; stress that the System lane holds every status change.
+- **Source:** section 14.13; `docs/02_diagrams.md` section 6.
 
 ### Slide 18. ER diagram
 
@@ -2385,6 +2808,14 @@ source references. Placeholders in square brackets (team names, guide name) are 
 - **Concepts:** *Association*, *composition*, *inheritance* (models inherit `db.Model`).
 - **Speaker notes:** The blueprint names `LoanService` and `EMICalculator`; in code they are modules with functions.
 - **Source:** `app/models.py`; `app/services/`.
+
+### Slide 20a. CRC cards
+
+- **Bullets:** One card per class: `User`, `Loan`, `Repayment`, `Document`, `LoanSetting`, plus the two service modules `LoanService` and `EMICalculator`; each lists responsibilities and collaborators with the real method names.
+- **Visual:** two or three of the cards (`Loan`, `LoanService`, `EMICalculator`) as two-column tables.
+- **Concepts:** *Responsibility*, *collaborator*, *single place for the rules*.
+- **Speaker notes:** `Loan` knows its data but never changes its own status; only `LoanService.change_status` does.
+- **Source:** section 14.14; `docs/02_diagrams.md` section 4.
 
 ### Slide 21. Backend and "API" working
 
@@ -2490,7 +2921,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
   (`app.url_map` and the SQLAlchemy models), and function line numbers by parsing the source with Python's `ast` module.
 - Workflow descriptions were written after reading `loan_service.py`, the five route files, `validators.py`,
   `decorators.py`, `emi.py`, `config.py` and `app/__init__.py` in full.
-- Every Mermaid block in section 14 was extracted and rendered in a browser: all **29** blocks rendered with no errors in both Mermaid 10.9.3 and Mermaid 11.4.0 (in headless Edge), and the rendered images were looked at for layout. Four diagram types (DFD Level 1, use cases, class diagram, activity diagrams) looked cluttered or too tall on the first render, so they were reworked and split into several smaller diagrams; that is why section 14 has two DFD Level 1 sheets, three use case diagrams, two class diagrams and compact left-to-right activity diagrams.
+- Every Mermaid block in section 14 was extracted and rendered in a browser: all **32** blocks rendered with no errors in both Mermaid 10.9.3 and Mermaid 11.4.0 (in headless Edge), and the rendered images were looked at for layout. Four diagram types (DFD Level 1, use cases, class diagram, activity diagrams) looked cluttered or too tall on the first render, so they were reworked and split into several smaller diagrams; that is why section 14 has two DFD Level 1 sheets, three use case diagrams, two class diagrams and compact left-to-right activity diagrams.
 
 ### 16.5 Suggested test plan (**Suggested**, not implemented)
 
@@ -2534,6 +2965,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | No rate limiting or account lockout | Not in the code |
 | No pagination | Lists load all matching rows |
 | No automated tests in the repository | See section 16 |
+| Two pages are wider than a 390 px phone screen | The Officer dashboard (594 px) and My loans (655 px): a visually hidden label inside the scrolling table is absolutely positioned and widens the page. Found while taking the prototype screenshots; not fixed (one CSS line would fix it) |
 | Tested on Windows only | Portability to Mac and Linux is claimed in the blueprint but was **Not Verified** |
 
 ### 17.3 Future enhancements (all **Suggested**, none implemented)
@@ -2548,8 +2980,25 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | Real payment gateway | Payments are simulated now |
 | Partial payment, prepayment, late fees | Excluded by the blueprint |
 | Deploy with a production server (for example Gunicorn or Waitress), HTTPS, a real `SECRET_KEY` | Real use |
-| `SESSION_COOKIE_SAMESITE="Lax"`, login rate limit, content-type checks on uploads | Security hardening |
+| Login rate limit and account lockout | Security hardening (cookie flags and upload content checks are done) |
 | Database unique constraint on `document.loan_id`, `PRAGMA foreign_keys=ON` | Integrity inside the database |
+
+
+### 17.4 Issues fixed after the first audit
+
+The final audit of the build found six small issues (and the review of the live site two more). All are fixed and have
+automated checks in `tests/` (see section 16):
+
+| Issue | Fix |
+|---|---|
+| More than 2 decimal places accepted for money | `has_too_many_decimals` in the apply form and in the amount limits of the settings |
+| Uploads checked by extension and size only | The first bytes must match PDF, PNG or JPEG (`check_document`) |
+| A deactivated officer's loans were stuck | Admin reassignment (`reassign_loan`) and a warning with the count on deactivation |
+| Duplicate email could give a 500 page | `create_user` catches `IntegrityError` and returns the form error |
+| Session cookie without `SameSite` | `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` |
+| `GET /logout` changed state | Logout is POST only with the CSRF token |
+| My loans Apply button looked enabled but led to a blocked page | One shared `apply_button` macro: disabled with the same helper text as the dashboard |
+| Pie chart table shares did not add up to 100 % | `percent_shares`: one decimal, the largest status takes the rounding |
 
 ---
 
@@ -2740,14 +3189,14 @@ Line numbers from the working tree on 23 Oct 2026.
 | `app/__init__.py` | `create_app` (17), `register_csrf` (64), `check_csrf` (71), `register_error_handlers` (80), `forbidden` (84), `not_found` (89), `too_large` (94), `server_error` (100) |
 | `app/models.py` | `User` (13) with `set_password` (30), `check_password` (34), `has_active_loan` (38); `Loan` (43) with `total_payable` (68), `amount_paid` (72), `outstanding` (76), `next_due_installment` (80), `display_id` (87); `Repayment` (92) with `is_overdue` (103); `Document` (108); `LoanSetting` (118); `load_user` (132) |
 | `app/routes/main.py` | `index` (14), `view_document` (22) |
-| `app/routes/auth.py` | `register` (14), `login` (31), `logout` (53) |
+| `app/routes/auth.py` | `register` (14), `login` (32), `logout` (54) |
 | `app/routes/borrower.py` | `get_own_loan_or_404` (15), `dashboard` (25), `apply` (33), `loans` (56), `loan_detail` (64), `pay` (72), `cancel` (87) |
-| `app/routes/officer.py` | `dashboard` (19), `applications` (27), `application_detail` (40), `application_action` (48) |
-| `app/routes/admin.py` | `dashboard` (26), `users` (33), `new_officer` (44), `toggle_user` (58), `settings` (71), `reports` (89) |
+| `app/routes/officer.py` | `dashboard` (20), `applications` (28), `application_detail` (41), `application_action` (69) |
+| `app/routes/admin.py` | `dashboard` (26), `users` (33), `new_officer` (44), `toggle_user` (59), `settings` (79), `reports` (97) |
 | `app/services/loan_service.py` | See the table in section 6.4 |
 | `app/services/emi.py` | `calculate_emi` (7), `max_affordable_amount` (16), `add_months` (27), `build_schedule` (36) |
 | `app/utils/decorators.py` | `role_required` (10), `dashboard_url` (26) |
-| `app/utils/validators.py` | `get_csrf_token` (16), `csrf_token_is_valid` (23), `to_float` (32), `to_int` (41), `validate_settings_form` (54), `validate_user_form` (92) |
+| `app/utils/validators.py` | `get_csrf_token` (20), `csrf_token_is_valid` (27), `to_float` (36), `to_int` (54), `validate_settings_form` (67), `validate_user_form` (109) |
 | `app/utils/formatters.py` | `inr` (4), `inr_short` (21), `format_date` (27) |
 | `config.py` | `Config` (10) |
 | `seed.py` | `confirm_reset` (20), `reset_database` (26), `seed_users` (33), `make_loan` (45), `add_schedule` (54), `seed_loans` (64), `print_summary` (109), `main` (122) |

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="1436" viewBox="0 0 390 1436" role="img" aria-label="Loan details (phone)">
+<rect width="390" height="1436" fill="#ffffff"/>
+<rect x="0" y="0" width="390" height="26" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="16" y="17" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#ffffff" text-anchor="start">Demo environment · payments are simulated</text>
+<rect x="0" y="26" width="390" height="60" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<line x1="0" y1="86" x2="390" y2="86" stroke="#bdbdbd" stroke-width="1.2"/>
+<rect x="16" y="40" width="32" height="32" rx="6" fill="#bdbdbd" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="32" y="62" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#1f1f1f" text-anchor="middle" font-weight="700">₹</text>
+<text x="58" y="62" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">MicroLoan</text>
+<rect x="326" y="40" width="48" height="36" rx="8" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<line x1="338" y1="50" x2="362" y2="50" stroke="#1f1f1f" stroke-width="2"/>
+<line x1="338" y1="58" x2="362" y2="58" stroke="#1f1f1f" stroke-width="2"/>
+<line x1="338" y1="66" x2="362" y2="66" stroke="#1f1f1f" stroke-width="2"/>
+<text x="16" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" text-decoration="underline">Dashboard</text>
+<text x="81.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">/</text>
+<text x="97.4" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" text-decoration="underline">My loans</text>
+<text x="156.2" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">/</text>
+<text x="172.2" y="112" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">LN-0002</text>
+<text x="16" y="148" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#1f1f1f" text-anchor="start" font-weight="700">Loan LN-0002</text>
+<rect x="200" y="130" width="90" height="24" rx="12" fill="#e2e2e2" stroke="#6a6a6a" stroke-width="1.1"/>
+<circle cx="212" cy="142" r="3" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="0"/>
+<text x="222" y="147" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Repaying</text>
+<rect x="16" y="168" width="358" height="330" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="36" y="198" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#1f1f1f" text-anchor="start" font-weight="700">Progress</text>
+<line x1="16" y1="212" x2="374" y2="212" stroke="#bdbdbd" stroke-width="1.2"/>
+<circle cx="46" cy="250" r="11" fill="#1f1f1f" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="70" y="255" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Applied</text>
+<text x="358" y="255" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="end">07 Jun 2026</text>
+<line x1="46" y1="250" x2="46" y2="292" stroke="#4d4d4d" stroke-width="3"/>
+<circle cx="46" cy="292" r="11" fill="#1f1f1f" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="70" y="297" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Under Review</text>
+<line x1="46" y1="292" x2="46" y2="334" stroke="#4d4d4d" stroke-width="3"/>
+<circle cx="46" cy="334" r="11" fill="#1f1f1f" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="70" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Approved</text>
+<text x="358" y="339" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="end">09 Jun 2026</text>
+<line x1="46" y1="334" x2="46" y2="376" stroke="#4d4d4d" stroke-width="3"/>
+<circle cx="46" cy="376" r="11" fill="#1f1f1f" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="70" y="381" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Disbursed</text>
+<text x="358" y="381" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="end">13 Jun 2026</text>
+<line x1="46" y1="376" x2="46" y2="418" stroke="#4d4d4d" stroke-width="3"/>
+<circle cx="46" cy="418" r="11" fill="#e2e2e2" stroke="#4d4d4d" stroke-width="2"/>
+<text x="70" y="423" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">Repaying</text>
+<text x="358" y="423" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="end">3 of 6 paid</text>
+<line x1="46" y1="418" x2="46" y2="460" stroke="#bdbdbd" stroke-width="3"/>
+<circle cx="46" cy="460" r="11" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="70" y="465" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start">Closed</text>
+<rect x="16" y="518" width="358" height="44" rx="8" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="30" y="545" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Officer remarks: Approved after income check.</text>
+<rect x="16" y="582" width="358" height="300" rx="10" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.4"/>
+<text x="36" y="612" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#1f1f1f" text-anchor="start" font-weight="700">Loan details</text>
+<line x1="16" y1="626" x2="374" y2="626" stroke="#bdbdbd" stroke-width="1.2"/>
+<text x="36" y="640" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Amount</text>
+<text x="354" y="640" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">₹30,000.00</text>
+<text x="36" y="676" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Tenure</text>
+<text x="354" y="676" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">6 months</text>
+<text x="36" y="712" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Interest rate</text>
+<text x="354" y="712" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">12% per year</text>
+<text x="36" y="748" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Monthly EMI</text>
+<text x="354" y="748" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">₹5,176.45</text>
+<text x="36" y="784" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Total payable</text>
+<text x="354" y="784" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">₹31,058.70</text>
+<text x="36" y="820" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#6a6a6a" text-anchor="start">Purpose</text>
+<text x="354" y="820" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="end" font-weight="700">Stock for grocery shop</text>
+<text x="16" y="918" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#1f1f1f" text-anchor="start" font-weight="700">EMI schedule</text>
+<rect x="16" y="934" width="358" height="84" rx="8" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.6"/>
+<text x="32" y="962" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">1   13 Jul 2026</text>
+<text x="358" y="962" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">₹5,176.45</text>
+<rect x="32" y="978" width="96" height="24" rx="12" fill="#e2e2e2" stroke="#6a6a6a" stroke-width="1.1"/>
+<circle cx="44" cy="990" r="3" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="0"/>
+<text x="54" y="995" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Paid</text>
+<rect x="16" y="1030" width="358" height="84" rx="8" fill="#f3f3f3" stroke="#4d4d4d" stroke-width="2.4"/>
+<text x="32" y="1058" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">4   13 Oct 2026</text>
+<text x="358" y="1058" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">₹5,176.45</text>
+<rect x="32" y="1074" width="96" height="24" rx="12" fill="#e2e2e2" stroke="#6a6a6a" stroke-width="1.1"/>
+<circle cx="44" cy="1086" r="3" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="0"/>
+<text x="54" y="1091" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">OVERDUE</text>
+<rect x="244" y="1070" width="114" height="34" rx="6" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="1.4"/>
+<text x="301.0" y="1092.0" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="700">Pay</text>
+<rect x="16" y="1126" width="358" height="84" rx="8" fill="#ffffff" stroke="#4d4d4d" stroke-width="1.6"/>
+<text x="32" y="1154" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="start" font-weight="700">5   13 Nov 2026</text>
+<text x="358" y="1154" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#1f1f1f" text-anchor="end" font-weight="700">₹5,176.45</text>
+<rect x="32" y="1170" width="96" height="24" rx="12" fill="#e2e2e2" stroke="#6a6a6a" stroke-width="1.1"/>
+<circle cx="44" cy="1182" r="3" fill="#1f1f1f" stroke="#1f1f1f" stroke-width="0"/>
+<text x="54" y="1187" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f" text-anchor="start" font-weight="700">Pending</text>
+<text x="16" y="1236" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6a6a6a" text-anchor="start">Only the earliest pending installment can be paid.</text>
+<rect x="0" y="1256" width="390" height="50" rx="0" fill="#444444" stroke="#444444" stroke-width="1.4"/>
+<text x="16" y="1286" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#ffffff" text-anchor="start">MicroLoan · NMIMS Hyderabad · simulated payments</text>
+<circle cx="314" cy="40" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="314" y="44.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<circle cx="8" cy="148" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="8" y="152.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<circle cx="8" cy="190" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="8" y="194.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="8" cy="600" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="8" y="604.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="8" cy="952" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="8" y="956.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="232" cy="1088" r="12" fill="#1f1f1f" stroke="#ffffff" stroke-width="2"/>
+<text x="232" y="1092.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<line x1="16" y1="1326" x2="374" y2="1326" stroke="#bdbdbd" stroke-width="1"/>
+<rect x="16" y="1340" width="34" height="18" rx="4" fill="#1f1f1f"/>
+<text x="60" y="1353" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">primary action (yellow in the design)</text>
+<rect x="16" y="1364" width="34" height="18" rx="4" fill="#ffffff" stroke="#1f1f1f" stroke-width="1.8"/>
+<text x="60" y="1377" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">secondary action</text>
+<rect x="16" y="1388" width="34" height="18" rx="4" fill="#e2e2e2" stroke="#bdbdbd" stroke-dasharray="4 3"/>
+<text x="60" y="1401" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">disabled</text>
+<circle cx="33" cy="1421" r="9" fill="#1f1f1f"/><text x="33" y="1425" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="60" y="1425" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f1f1f">element number (see the list)</text>
+</svg>

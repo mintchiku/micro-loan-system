@@ -457,7 +457,7 @@ These are demo values; put them in README too.
 | Non-functional requirements | §10 |
 | Use case diagram | Actors = Borrower, Loan Officer, Admin (+ System for overdue/closing); use cases = rows of §4 matrix |
 | Activity diagram | "Apply for loan" flow with decision nodes from §7 rules 1–4 |
-| Swimlane diagram | Loan approval: lanes Borrower → System → Loan Officer (apply → validate → review → approve/reject → disburse → schedule) |
+| Swimlane diagram | Full loan lifecycle with four lanes Borrower, System, Loan Officer, Admin (apply → validate → review → approve/reject → admin reassignment → disburse → schedule → repay → close), plus a smaller "Pay an installment" swimlane (Borrower, System) |
 | Class diagram | §5 models + `EMICalculator`/`LoanService` service classes, with relationships |
 | CRC cards | User, Loan, Repayment, Document, LoanSetting, LoanService, EMICalculator |
 | DFD Level 0 | System ↔ Borrower, Officer, Admin |
@@ -467,6 +467,9 @@ These are demo values; put them in README too.
 | Wireframes / prototype | One per page in §8 (at minimum pages 1, 2, 3, 5, 6, 8, 11, 13, 15, 19, 20) |
 
 If a feature is added or changed in code, list the diagrams that must be updated.
+
+The finished documents are in `docs/` (SRS, diagrams as PNG and SVG, CRC cards, wireframes, prototype screenshots);
+`docs/README.md` maps each file to the assignment items.
 
 ---
 

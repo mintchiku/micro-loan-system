@@ -115,8 +115,9 @@ micro-loan-system/
 ├── CLAUDE.md                  Blueprint + the owner's rules for Claude (READ FIRST)
 ├── PROGRESS.md                Build log: plan, checks, decisions per phase (+ redesign entry)
 ├── README.md                  Setup, demo logins, demo script, folder tree
-├── WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md   2,800-line reference with 29 diagrams and a 27-slide plan
+├── WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md   3281-line reference with 32 diagrams and a 31-slide plan
 ├── PROJECT_HANDOFF_GIST.md    This file
+├── docs/                      SE documents: SRS, diagrams (28 as PNG and SVG), CRC cards, 13 wireframes, 24 prototype screenshots
 ├── PROMPTS.md                 The phase prompts (git-ignored, not part of the app)
 ├── requirements.txt  .env.example  .gitignore
 ├── run.py                     python run.py -> dev server on 127.0.0.1:5000
@@ -311,7 +312,7 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 
 - **Automated tests are not in the repository.** During the build, Claude used scripts with the Flask test client on a temporary database; they lived in a temporary scratchpad folder and are gone or unreachable. Results recorded in `PROGRESS.md`: Phase 2: 27/27, Phase 4: 52/52, Phase 5: 43/43, Phase 6: 29/29, Phase 7: 90/90, Phase 8: 61/61 (62 later), final audit: 89/89 (permission matrix, all 384 state-transition combinations, rules R1 to R11, a failed-commit rollback), UI redesign: 146/146.
 - **Visual check:** 16 pages at 1360px and 4 at 390px were screenshotted with headless Edge and reviewed; two phone bugs were found and fixed (tracker overflow, clipped Pay button).
-- The 29 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0.
+- The 32 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0 (the 28 diagrams of `docs/` too).
 - `python app/services/emi.py` is the only self-test inside the repo.
 
 ### 11.1 Known issues found in the final audit (all six fixed in session 2, Part 2)
@@ -418,7 +419,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 1. ~~Which of the six known issues (11.1) to fix.~~ All six are fixed (session 2, Part 2).
 2. **Commit** the redesign (31 files) and the two documentation files? (Nothing has been committed since Phase 9.)
 3. Move the test scripts into the repo as `tests/` (pytest) so the testing slide can be reproduced.
-4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (27-slide plan, 29 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).
+4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (31-slide plan, 32 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).
 5. Whether to ever deploy (the blueprint says local only; deployment is out of scope).
 6. Decide what to do with the extra demo data (the owner's own borrower account and LN-0008) the next time `seed.py` is run.
 
