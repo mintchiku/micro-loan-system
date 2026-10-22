@@ -15,7 +15,7 @@
 {% if loan.status == 'Closed' %}
   <div class="alert alert-success" role="status">
     <i class="bi bi-trophy-fill alert-icon" aria-hidden="true"></i>
-    <div class="alert-body"><strong>Loan fully repaid.</strong> Every installment is paid{% if loan.closed_on %}, and the loan closed on {{ loan.closed_on|date }}{% endif %}. You can apply for a new loan any time.</div>
+    <div class="alert-body"><strong>Loan fully repaid.</strong> Every installment is paid{% if loan.closed_on %}, and the loan closed on {{ loan.closed_on|date }}{% endif %}.{% if not current_user.has_active_loan() %} You can apply for a new loan any time.{% endif %}</div>
   </div>
 {% endif %}
 

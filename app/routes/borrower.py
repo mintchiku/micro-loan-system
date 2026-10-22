@@ -56,7 +56,7 @@ def apply():
 def loans():
     """List of all the borrower's loans, newest first."""
     my_loans = Loan.query.filter_by(borrower_id=current_user.id).order_by(Loan.applied_on.desc()).all()
-    return render_template("borrower/loans.html", loans=my_loans)
+    return render_template("borrower/loans.html", loans=my_loans, has_active_loan=current_user.has_active_loan())
 
 
 @borrower_bp.route("/loans/<int:loan_id>")

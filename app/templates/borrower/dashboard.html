@@ -15,15 +15,7 @@
     <h1>Welcome back, {{ current_user.name.split()[0] }}</h1>
     <p>Here is where your loan stands today.</p>
   </div>
-  <div class="text-lg-end">
-    {% if active_loan %}
-      {# Rule 3: one active loan at a time #}
-      <button class="btn btn-primary" disabled title="You already have an active loan"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</button>
-      <div class="small text-muted mt-1">Available again once your current loan is closed.</div>
-    {% else %}
-      <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</a>
-    {% endif %}
-  </div>
+  <div class="text-lg-end">{{ m.apply_button(active_loan) }}</div>
 </div>
 
 {% if overdue_count %}

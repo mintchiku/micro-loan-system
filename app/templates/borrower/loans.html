@@ -9,7 +9,7 @@
     <h1>My loans</h1>
     <p>Every application you have made, newest first.</p>
   </div>
-  {% if loans %}<a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</a>{% endif %}
+  {% if loans %}<div class="text-lg-end">{{ m.apply_button(has_active_loan) }}</div>{% endif %}
 </div>
 
 {% if loans %}

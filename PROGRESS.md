@@ -447,3 +447,35 @@ Authorised by the owner in one brief (Parts 0 to 5). Ground rules for the whole 
 ### Done
 - Commit `0bde9f4` "UI redesign: yellow and blue theme" (31 files).
 - Commit "Add technical documentation and handoff gist" (this entry included).
+
+## Part 1: UI and report fixes found in the review
+
+### Plan
+- `templates/macros.html`: new macro `apply_button(has_active_loan)` (enabled yellow link, or the same disabled button
+  plus the helper text "Available again once your current loan is closed.").
+- `templates/borrower/dashboard.html` and `templates/borrower/loans.html`: both use the macro, so the two pages behave
+  identically. `routes/borrower.py` (`loans`) passes `has_active_loan`.
+- Same pattern elsewhere: surveyed every `btn-primary` in the templates. Only My loans was wrong. The Closed-loan banner
+  text "You can apply for a new loan any time" was also wrong for a borrower who has another active loan; it is now
+  conditional (`templates/borrower/loan_detail.html`).
+- `loan_service.percent_shares(values)`: one-decimal shares that add up to exactly 100.0 (the rounding remainder goes to
+  the largest row). Used for the pie "View as table" column and for the pie tooltip (`routes/admin.py`,
+  `templates/admin/reports.html`). The chart itself is unchanged.
+
+### Verified (Flask test client, temporary database, 28/28; earlier suites re-run: all pass)
+- A borrower with an active loan (Aman): `/borrower/loans` has **no enabled yellow button**; the Apply button is the
+  disabled one with the helper text, and its markup is identical to the dashboard's.
+- A borrower with history but no active loan (registered, applied, cancelled): `/borrower/loans` shows an **enabled**
+  Apply link and the Apply page really opens the form. For all four seeded borrowers an enabled Apply link on the
+  dashboard or My loans only appears when the Apply page is open.
+- Closed-loan banner: Sneha (Closed LN-0001 plus an active loan) no longer sees "You can apply for a new loan any
+  time"; a borrower with no active loan still does.
+- Report shares: the "View as table" column of the seeded data has one decimal per row and adds up to exactly
+  **100.0%** (7 x 14.2 or 14.3; the Disbursed row shows 0.0%); `percent_shares` was also checked on 5,000 random
+  lists (always exactly 100.0). The pie tooltip uses the same shares; the chart definition and colours are unchanged.
+- Re-run: phases 2, 4, 5, 6, 7, 8 and the UI suite all pass.
+
+### Notes
+- `macros.html` now has 9 macros (new: `apply_button`). The technical documentation and gist are updated in Parts 3 and 5.
+- Not changed (not in the brief): the borrower menu link "Apply for loan" still opens the Apply page, which shows the
+  warning when a loan is active. It is a plain menu link, not a yellow button.

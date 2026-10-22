@@ -43,7 +43,7 @@
               <tbody>
                 {% for label in status_chart.labels %}
                   {% set count = status_chart["values"][loop.index0] %}
-                  <tr><td>{{ label }}</td><td class="text-end">{{ count }}</td><td class="text-end">{{ "%.0f"|format(count / total_loans * 100) }}%</td></tr>
+                  <tr><td>{{ label }}</td><td class="text-end">{{ count }}</td><td class="text-end">{{ "%.1f"|format(status_chart.shares[loop.index0]) }}%</td></tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -131,8 +131,8 @@
           tooltip: {
             callbacks: {
               label: (ctx) => {
-                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                return " " + ctx.label + ": " + ctx.parsed + (ctx.parsed === 1 ? " loan" : " loans") + " (" + Math.round((ctx.parsed / total) * 100) + "%)";
+                // same one-decimal share as the "View as table" list, which always adds up to 100.0
+                return " " + ctx.label + ": " + ctx.parsed + (ctx.parsed === 1 ? " loan" : " loans") + " (" + statusData.shares[ctx.dataIndex].toFixed(1) + "%)";
               },
             },
           },

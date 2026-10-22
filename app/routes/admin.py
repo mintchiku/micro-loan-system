@@ -93,6 +93,7 @@ def reports():
         "labels": list(totals["loans_by_status"].keys()),
         "values": list(totals["loans_by_status"].values()),
         "colors": [STATUS_COLORS[s] for s in totals["loans_by_status"]],
+        "shares": loan_service.percent_shares(list(totals["loans_by_status"].values())),  # adds up to 100.0
     }
     return render_template("admin/reports.html", status_chart=status_chart,
                            month_chart=loan_service.disbursed_per_month(),

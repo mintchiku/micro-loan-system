@@ -405,6 +405,16 @@ def admin_totals():
     }
 
 
+def percent_shares(values):
+    """Share of the total for each value, one decimal; the list always adds up to exactly 100.0."""
+    total = sum(values)
+    if total == 0:
+        return [0.0 for _ in values]
+    tenths = [round(value * 1000 / total) for value in values]  # each share in tenths of a percent
+    tenths[values.index(max(values))] += 1000 - sum(tenths)  # the rounding remainder goes to the largest row
+    return [tenth / 10 for tenth in tenths]
+
+
 def disbursed_per_month(months=6):
     """Amount disbursed in each of the last `months` months (oldest first), for the bar chart."""
     first_of_this_month = date.today().replace(day=1)
