@@ -282,3 +282,44 @@ def disburse_loan(loan, officer):
     except Exception:
         db.session.rollback()
         raise
+
+
+# ---------- Repayments (rules 8 and 9) ----------
+
+def pay_installment(loan, borrower, repayment_id):
+    """Simulated payment of the earliest Pending installment; moves the loan to Repaying / Closed."""
+    if loan.borrower_id != borrower.id:
+        raise LoanError("You can only pay your own loans.")
+    if loan.status not in ("Disbursed", "Repaying"):
+        raise LoanError("This loan has no installments to pay.")
+    next_due = loan.next_due_installment()
+    if next_due is None or next_due.id != repayment_id:  # rule 8: strictly in order
+        raise LoanError("Only the earliest pending installment can be paid.")
+
+    try:
+        next_due.status = "Paid"
+        next_due.paid_on = date.today()
+        if loan.status == "Disbursed":  # first payment
+            change_status(loan, "Repaying", "system")
+        if loan.next_due_installment() is None:  # that was the last one
+            change_status(loan, "Closed", "system")
+            loan.closed_on = date.today()
+        db.session.commit()  # payment and status change are saved together
+    except Exception:
+        db.session.rollback()
+        raise
+    return next_due
+
+
+def borrower_summary(borrower):
+    """Active loan, next installment, overdue count and recent payments for the borrower dashboard."""
+    active_loan = get_active_loan(borrower)
+    recent_payments = (Repayment.query.join(Loan)
+                       .filter(Loan.borrower_id == borrower.id, Repayment.status == "Paid")
+                       .order_by(Repayment.paid_on.desc(), Repayment.id.desc()).limit(5).all())
+    return {
+        "active_loan": active_loan,
+        "next_due": active_loan.next_due_installment() if active_loan else None,
+        "overdue_count": sum(1 for r in active_loan.repayments if r.is_overdue()) if active_loan else 0,
+        "recent_payments": recent_payments,
+    }

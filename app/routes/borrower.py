@@ -23,9 +23,9 @@ def get_own_loan_or_404(loan_id):
 @borrower_bp.route("/dashboard")
 @role_required("borrower")
 def dashboard():
-    """Borrower home: active loan card and Apply button."""
-    active_loan = loan_service.get_active_loan(current_user)
-    return render_template("borrower/dashboard.html", active_loan=active_loan)
+    """Borrower home: active loan card, next due, overdue warning, recent payments."""
+    summary = loan_service.borrower_summary(current_user)
+    return render_template("borrower/dashboard.html", **summary)
 
 
 @borrower_bp.route("/apply", methods=["GET", "POST"])
@@ -65,6 +65,21 @@ def loan_detail(loan_id):
     """One loan with its status, amounts and officer remarks."""
     loan = get_own_loan_or_404(loan_id)
     return render_template("borrower/loan_detail.html", loan=loan)
+
+
+@borrower_bp.route("/loans/<int:loan_id>/pay", methods=["POST"])
+@role_required("borrower")
+def pay(loan_id):
+    """Pay the next installment (simulated payment, no real money)."""
+    loan = get_own_loan_or_404(loan_id)
+    try:
+        repayment = loan_service.pay_installment(loan, current_user, to_int(request.form.get("repayment_id")))
+        flash(f"Installment {repayment.installment_no} of {loan.tenure_months} paid.", "success")
+        if loan.status == "Closed":
+            flash("All installments are paid. Your loan is now closed!", "success")
+    except LoanError as error:
+        flash(str(error), "danger")
+    return redirect(url_for("borrower.loan_detail", loan_id=loan.id))
 
 
 @borrower_bp.route("/loans/<int:loan_id>/cancel", methods=["POST"])

@@ -11,7 +11,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 3. Seed (users) | Done |
 | 4. Apply | Done |
 | 5. Officer | Done |
-| 6. Repay | Not started |
+| 6. Repay | Done |
 | 7. Admin + full seed | Not started |
 | 8. Polish | Not started |
 | 9. Final audit | Not started |
@@ -235,3 +235,42 @@ Then log in as `officer@test.com` / `admin@test.com` with password `Test@1234`.
 - Approve and Reject share one form (two buttons with `formaction`); confirm dialog on Reject
   and Disburse.
 - Search accepts `LN-0007`, `ln7` or `7` as a loan ID, otherwise matches the borrower name.
+
+---
+
+## Phase 6 — Repayments
+
+### Plan
+- `loan_service.py`: `pay_installment(loan, borrower, repayment_id)` (only the earliest Pending
+  row; Paid + today; Disbursed → Repaying on first payment; Repaying → Closed + `closed_on`
+  when none are Pending; one commit with rollback) and `borrower_summary(borrower)`
+- `routes/borrower.py`: POST `/borrower/loans/<id>/pay`; dashboard uses `borrower_summary`
+- `macros.html`: `schedule_table(loan, pay_url)` adds a Pay button (with confirm) on the
+  earliest Pending row only; overdue rows red with an "Overdue" badge
+- `borrower/loan_detail.html`: repayment summary (total payable, paid, outstanding, next due,
+  X of N paid, progress bar) + schedule
+- `borrower/dashboard.html`: next due amount/date, overdue warning, recent payments
+
+### Verified (test client, 29/29; Phases 2, 4, 5 re-run: all pass)
+- 3-month loan: only installment 1 has a Pay button; paying installment 3 first is refused
+  ("Only the earliest pending installment can be paid"); paying the same row twice is refused.
+- First payment → Repaying; last payment → Closed with `closed_on`, outstanding ₹0, paid = total;
+  no Pay button afterwards; paying a Closed loan is refused.
+- After closing, the borrower sees the Apply form again.
+- Another borrower → 404, officer → 403 on the pay URL.
+- With due dates moved into the past: `is_overdue()` true for past Pending rows only, red
+  "Overdue" badges on the borrower and officer schedules, dashboard warning "2 overdue
+  installments"; a paid row is never overdue.
+
+### Test snippet: make a loan overdue without waiting (one-time, not a feature)
+Run from the project folder with the venv active; change `LOAN_ID` to the disbursed loan's number
+(LN-0005 → 5). It moves every due date of that loan 2 months back.
+```powershell
+python -c "from app import create_app, db; from app.models import Loan; from app.services.emi import add_months; app = create_app(); app.app_context().push(); LOAN_ID = 1; loan = db.session.get(Loan, LOAN_ID); [setattr(r, 'due_date', add_months(r.due_date, -2)) for r in loan.repayments]; db.session.commit(); print('Moved due dates of', loan.display_id())"
+```
+
+### Decisions
+- The pay form sends the installment id; the server checks it is the earliest Pending one, so a
+  double click or a stale page cannot pay two installments.
+- Payment and status changes use the actor `"system"` for Disbursed → Repaying and
+  Repaying → Closed, exactly as in the §6 table.

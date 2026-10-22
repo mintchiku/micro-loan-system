@@ -1,5 +1,10 @@
 {# Reusable template pieces. Import with: {% import "macros.html" as m %} #}
 
+{# Hidden CSRF field; put inside every POST form #}
+{% macro csrf_field() %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}
+
 {# One form input with label, required marker, kept value and field-level error.
    Extra HTML attributes (min, max, step, ...) can be passed as keyword arguments. #}
 {% macro input_field(name, label, values, errors, type="text", required=true, help=None) %}
@@ -26,12 +31,17 @@
 <span class="badge text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
 {% endmacro %}
 
-{# EMI schedule table of a disbursed loan; overdue rows get a red badge #}
-{% macro schedule_table(loan) %}
+{# EMI schedule table of a disbursed loan; overdue rows get a red badge.
+   pay_url: if given, the earliest Pending installment gets a Pay button (rule 8). #}
+{% macro schedule_table(loan, pay_url=None) %}
+{% set next_due = loan.next_due_installment() %}
 <div class="table-responsive">
   <table class="table table-sm align-middle bg-white mb-0">
     <thead class="table-light">
-      <tr><th>No.</th><th>Due date</th><th class="text-end">Amount</th><th>Status</th><th>Paid on</th></tr>
+      <tr>
+        <th>No.</th><th>Due date</th><th class="text-end">Amount</th><th>Status</th><th>Paid on</th>
+        {% if pay_url %}<th></th>{% endif %}
+      </tr>
     </thead>
     <tbody>
       {% for repayment in loan.repayments %}
@@ -41,14 +51,21 @@
         <td class="text-end">{{ repayment.amount|inr }}</td>
         <td>{{ status_badge("Overdue" if repayment.is_overdue() else repayment.status) }}</td>
         <td>{{ repayment.paid_on|date }}</td>
+        {% if pay_url %}
+        <td>
+          {% if next_due and repayment.id == next_due.id %}
+          <form method="post" action="{{ pay_url }}"
+                onsubmit="return confirm('Pay installment {{ repayment.installment_no }} of {{ repayment.amount|inr }}? (simulated payment)');">
+            {{ csrf_field() }}
+            <input type="hidden" name="repayment_id" value="{{ repayment.id }}">
+            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-credit-card"></i> Pay</button>
+          </form>
+          {% endif %}
+        </td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
-{% endmacro %}
-
-{# Hidden CSRF field; put inside every POST form #}
-{% macro csrf_field() %}
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 {% endmacro %}

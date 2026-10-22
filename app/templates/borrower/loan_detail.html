@@ -60,4 +60,30 @@
     </div>
   </div>
 </div>
+
+{# ---------- Repayments (only after disbursal) ---------- #}
+{% if loan.repayments %}
+{% set paid_count = loan.repayments|selectattr("status", "equalto", "Paid")|list|length %}
+{% set next_due = loan.next_due_installment() %}
+<div class="card shadow-sm mt-4">
+  <div class="card-header"><i class="bi bi-graph-up"></i> Repayment summary</div>
+  <div class="card-body">
+    <div class="row text-center g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="text-muted small">Total payable</div><div class="fs-5">{{ loan.total_payable()|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Paid so far</div><div class="fs-5 text-success">{{ loan.amount_paid()|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="fs-5">{{ loan.outstanding()|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Next due date</div>
+        <div class="fs-5">{{ next_due.due_date|date if next_due else "-" }}</div></div>
+    </div>
+    <div class="small mb-1">Installments paid: <strong>{{ paid_count }} of {{ loan.tenure_months }}</strong></div>
+    <div class="progress" role="progressbar" aria-label="Repayment progress"
+         aria-valuenow="{{ paid_count }}" aria-valuemin="0" aria-valuemax="{{ loan.tenure_months }}">
+      <div class="progress-bar bg-success" style="width: {{ (paid_count / loan.tenure_months * 100)|round(1) }}%"></div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5 mt-4">EMI schedule</h2>
+{{ m.schedule_table(loan, pay_url=url_for('borrower.pay', loan_id=loan.id) if loan.status in ("Disbursed", "Repaying") else None) }}
+{% endif %}
 {% endblock %}

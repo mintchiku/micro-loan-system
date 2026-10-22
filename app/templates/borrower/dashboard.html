@@ -14,8 +14,15 @@
   {% endif %}
 </div>
 
+{% if overdue_count %}
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i>
+    You have {{ overdue_count }} overdue installment{{ "s" if overdue_count > 1 }}. Please pay as soon as possible.
+    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="alert-link">Pay now</a>
+  </div>
+{% endif %}
+
 {% if active_loan %}
-{% set next_due = active_loan.next_due_installment() %}
 <div class="card shadow-sm mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
     <span>Active loan <strong>{{ active_loan.display_id() }}</strong></span>
@@ -25,13 +32,19 @@
     <div class="row text-center g-3">
       <div class="col-6 col-md-3"><div class="text-muted small">Amount</div><div class="fs-5">{{ active_loan.amount|inr }}</div></div>
       <div class="col-6 col-md-3"><div class="text-muted small">Monthly EMI</div><div class="fs-5">{{ active_loan.emi_amount|inr }}</div></div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Next due date</div>
-        <div class="fs-5">{{ next_due.due_date|date if next_due else "-" }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Next due</div>
+        <div class="fs-5">
+          {% if next_due %}{{ next_due.amount|inr }}
+            <div class="small {{ 'text-danger' if next_due.is_overdue() else 'text-muted' }}">on {{ next_due.due_date|date }}</div>
+          {% else %}-{% endif %}
+        </div>
+      </div>
       <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="fs-5">{{ active_loan.outstanding()|inr }}</div></div>
     </div>
   </div>
   <div class="card-footer bg-white">
-    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-outline-primary btn-sm">View details</a>
+    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-outline-primary btn-sm">
+      {{ "View schedule & pay" if next_due else "View details" }}</a>
   </div>
 </div>
 {% else %}
@@ -42,5 +55,29 @@
 </div>
 {% endif %}
 
-<a href="{{ url_for('borrower.loans') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-wallet2"></i> See all my loans</a>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h2 class="h5 mb-0">Recent payments</h2>
+  <a href="{{ url_for('borrower.loans') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-wallet2"></i> All my loans</a>
+</div>
+{% if recent_payments %}
+<div class="table-responsive">
+  <table class="table table-sm align-middle bg-white">
+    <thead class="table-light">
+      <tr><th>Paid on</th><th>Loan</th><th>Installment</th><th class="text-end">Amount</th></tr>
+    </thead>
+    <tbody>
+      {% for payment in recent_payments %}
+      <tr>
+        <td>{{ payment.paid_on|date }}</td>
+        <td>{{ payment.loan.display_id() }}</td>
+        <td>{{ payment.installment_no }} of {{ payment.loan.tenure_months }}</td>
+        <td class="text-end">{{ payment.amount|inr }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted border rounded bg-white p-3">No payments yet. Your EMI payments will appear here.</p>
+{% endif %}
 {% endblock %}
