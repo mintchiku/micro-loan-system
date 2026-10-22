@@ -379,3 +379,50 @@ a token does).
 - Not in the blueprint but added (all small, needed): `app/templates/macros.html`, `app/utils/formatters.py` (the `inr` / `date` filters), `LoanError`, `STATUS_ORDER`, a 413 handler, `PROGRESS.md`.
 - Admin read-only access to applications reuses the officer routes (the blueprint lists no admin application page).
 - In the blueprint but not built as written: separate `EMICalculator` / `LoanService` **classes** (built as module functions), an `about` page mentioned in the folder tree, the *Disbursed* status in the seed data (see Phase 7 decisions).
+
+---
+
+## UI redesign: yellow and blue theme (after Phase 9)
+
+Requested: take inspiration from a bank's website UI, apply the Laws of UX, make yellow and blue the primary colours,
+and use Claude Design. No routes, models or business rules changed.
+
+### What was built
+- **Design canvas** (Claude Design, private): style guide, Home, Sign in, Borrower dashboard, Loan details, Officer
+  review. It was the visual spec, then the real templates were built to match.
+- `static/css/style.css` rewritten: design tokens, Bootstrap re-skin (buttons, forms, cards, tables, badges, alerts),
+  components (stepper, timeline, stat tiles, progress bar), landing and login layouts, phone rules.
+- `templates/base.html`: utility strip, header with active-link underline and user chip, flash alerts with icons,
+  full footer on the landing page and a slim footer elsewhere. Pages that need edge-to-edge layout override the
+  new `page` block.
+- `templates/macros.html`: `status_badge` (soft pills), `input_field` with a rupee prefix, `breadcrumb`,
+  `empty_state`, `progress_bar`, `loan_stepper`, restyled `schedule_table`.
+- Every template restyled (landing, login, register, borrower x4, officer x3, admin x5, errors).
+- `static/js/main.js`: busy state on submit (spinner, ignores double clicks), loaded on every page.
+- Small code changes: `main.index` passes the current settings so the landing page facts and the example EMI are
+  never stale (`loan_service.sample_loan`), `officer.application_detail` passes settings for the affordability
+  meter, an `inr_short` filter, and new pie colours in `admin.py`.
+- CLAUDE.md section 9a and a README "Design" section document the theme.
+
+### Verified
+- All earlier suites re-run (phases 2, 4, 5, 6, 7, 8 and the final audit): all pass. Some checks were keyed to the
+  old markup (for example `display-6`, "Next due") and were updated to the same behaviour on the new markup.
+- New UI suite, 146 checks: exactly one enabled yellow action per page (and it is the right one), the current nav
+  link is marked, at most five menu items per role, HTML tags balanced on every page, step tracker states for every
+  seeded status, progress bar width, landing page follows the admin's settings, forms keep their markers, WCAG
+  contrast of 30 text/background pairs reaches 4.5:1 (and 3:1 for large text and graphics).
+- Real rendering: headless Edge screenshots of 16 pages at 1360px and 4 pages at 390px, reviewed by eye. Two
+  phone problems were found and fixed: the step tracker scrolled sideways (now vertical) and the Pay button was
+  clipped (schedule rows are now two-line cards on phones).
+- Pie palette run through the dataviz validator: the hard normal-vision rule passes; CVD separation is in the
+  allowed band because the legend (with counts), the 2px gaps and a table view carry identity. The lightness and
+  chroma checks still fail on purpose: "Applied" and "Cancelled" are meant to be neutral.
+
+### Decisions and notes
+- **Brand:** no bank name, logo, colours or text is used; only layout patterns. The page text of the bank's site could
+  be read but not its colours or fonts, so those come from the brief and the Laws of UX.
+- **System fonts only** (Segoe UI on Windows): no new dependency. A web font could be added later if wanted.
+- **Pie chart kept** because the blueprint asks for it, although the dataviz guidance prefers at most 6 slices.
+- **Yellow badge:** Disbursed and Repaying stay yellow (blueprint maps both to "warning"); they are soft pills, so they
+  do not compete with the solid yellow buttons.
+- Spelling: "installment" everywhere, as in the blueprint.

@@ -3,61 +3,76 @@
 {% block title %}Loan {{ loan.display_id() }}{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Loan {{ loan.display_id() }} {{ m.status_badge(loan.status) }}</h1>
-  <a href="{{ url_for('borrower.loans') }}" class="btn btn-link"><i class="bi bi-arrow-left"></i> My loans</a>
+{{ m.breadcrumb([('Dashboard', url_for('borrower.dashboard')), ('My loans', url_for('borrower.loans')), (loan.display_id(), none)]) }}
+<div class="page-head">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <h1>Loan {{ loan.display_id() }}</h1>
+    {{ m.status_badge(loan.status) }}
+  </div>
 </div>
 
-{% if loan.remarks %}
-  <div class="alert alert-{{ 'danger' if loan.status == 'Rejected' else 'info' }}">
-    <strong>Officer remarks:</strong> {{ loan.remarks }}
+{# Peak-end: a loan that is fully repaid ends on a clear success state #}
+{% if loan.status == 'Closed' %}
+  <div class="alert alert-success" role="status">
+    <i class="bi bi-trophy-fill alert-icon" aria-hidden="true"></i>
+    <div class="alert-body"><strong>Loan fully repaid.</strong> Every installment is paid{% if loan.closed_on %}, and the loan closed on {{ loan.closed_on|date }}{% endif %}. You can apply for a new loan any time.</div>
   </div>
 {% endif %}
 
-<div class="row g-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-header">Loan details</div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-6">Amount</dt><dd class="col-6">{{ loan.amount|inr }}</dd>
-          <dt class="col-6">Tenure</dt><dd class="col-6">{{ loan.tenure_months }} months</dd>
-          <dt class="col-6">Interest rate</dt><dd class="col-6">{{ "%g"|format(loan.interest_rate) }}% per year</dd>
-          <dt class="col-6">Monthly EMI</dt><dd class="col-6">{{ loan.emi_amount|inr }}</dd>
-          <dt class="col-6">Total payable</dt><dd class="col-6">{{ loan.total_payable()|inr }}</dd>
-          <dt class="col-6">Purpose</dt><dd class="col-6">{{ loan.purpose }}</dd>
-          <dt class="col-6">Document</dt>
-          <dd class="col-6">
-            {% if loan.document %}
-              <a href="{{ url_for('main.view_document', document_id=loan.document.id) }}" target="_blank">
-                <i class="bi bi-file-earmark"></i> {{ loan.document.original_name }}</a>
-            {% else %}<span class="text-muted">No document</span>{% endif %}
-          </dd>
+{{ m.loan_stepper(loan) }}
+
+{% if loan.remarks %}
+  <div class="alert alert-{{ 'danger' if loan.status == 'Rejected' else 'info' }} mt-3" role="status">
+    <i class="bi bi-chat-left-text-fill alert-icon" aria-hidden="true"></i>
+    <div class="alert-body"><strong>Officer remarks:</strong> {{ loan.remarks }}</div>
+  </div>
+{% endif %}
+
+<div class="row g-4 mt-1">
+  <div class="col-lg-6">
+    <section class="card h-100">
+      <h2 class="card-header h5 mb-0">Loan details</h2>
+      <div class="card-body pt-2">
+        <dl class="facts">
+          <div><dt>Amount</dt><dd>{{ loan.amount|inr }}</dd></div>
+          <div><dt>Tenure</dt><dd>{{ loan.tenure_months }} months</dd></div>
+          <div><dt>Interest rate</dt><dd>{{ "%g"|format(loan.interest_rate) }}% per year</dd></div>
+          <div><dt>Monthly EMI</dt><dd>{{ loan.emi_amount|inr }}</dd></div>
+          <div><dt>Total payable</dt><dd>{{ loan.total_payable()|inr }}</dd></div>
+          <div><dt>Purpose</dt><dd>{{ loan.purpose }}</dd></div>
+          <div><dt>Document</dt>
+            <dd>
+              {% if loan.document %}
+                <a href="{{ url_for('main.view_document', document_id=loan.document.id) }}" target="_blank" class="text-decoration-none">
+                  <i class="bi bi-file-earmark" aria-hidden="true"></i> {{ loan.document.original_name }}</a>
+              {% else %}<span class="text-muted fw-normal">No document</span>{% endif %}
+            </dd>
+          </div>
         </dl>
       </div>
-    </div>
+    </section>
   </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-header">Status updates</div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-6">Applied on</dt><dd class="col-6">{{ loan.applied_on|date }}</dd>
-          <dt class="col-6">Officer</dt><dd class="col-6">{{ loan.officer.name if loan.officer else "Not assigned yet" }}</dd>
-          <dt class="col-6">Reviewed on</dt><dd class="col-6">{{ loan.reviewed_on|date }}</dd>
-          <dt class="col-6">Disbursed on</dt><dd class="col-6">{{ loan.disbursed_on|date }}</dd>
-          <dt class="col-6">Closed on</dt><dd class="col-6">{{ loan.closed_on|date }}</dd>
+  <div class="col-lg-6">
+    <section class="card h-100">
+      <h2 class="card-header h5 mb-0">Status updates</h2>
+      <div class="card-body pt-2">
+        <dl class="facts">
+          <div><dt>Applied on</dt><dd>{{ loan.applied_on|date }}</dd></div>
+          <div><dt>Officer</dt><dd>{{ loan.officer.name if loan.officer else "Not assigned yet" }}</dd></div>
+          <div><dt>Reviewed on</dt><dd>{{ loan.reviewed_on|date }}</dd></div>
+          <div><dt>Disbursed on</dt><dd>{{ loan.disbursed_on|date }}</dd></div>
+          <div><dt>Closed on</dt><dd>{{ loan.closed_on|date }}</dd></div>
         </dl>
         {% if loan.status == "Applied" %}
           <form method="post" action="{{ url_for('borrower.cancel', loan_id=loan.id) }}" class="mt-3"
                 onsubmit="return confirm('Cancel application {{ loan.display_id() }}? This cannot be undone.');">
             {{ m.csrf_field() }}
-            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle"></i> Cancel application</button>
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-circle" aria-hidden="true"></i> Cancel application</button>
           </form>
         {% endif %}
       </div>
-    </div>
+    </section>
   </div>
 </div>
 
@@ -65,25 +80,24 @@
 {% if loan.repayments %}
 {% set paid_count = loan.repayments|selectattr("status", "equalto", "Paid")|list|length %}
 {% set next_due = loan.next_due_installment() %}
-<div class="card shadow-sm mt-4">
-  <div class="card-header"><i class="bi bi-graph-up"></i> Repayment summary</div>
+<section class="card mt-4">
+  <h2 class="card-header h5 mb-0">Repayment summary</h2>
   <div class="card-body">
-    <div class="row text-center g-3 mb-3">
-      <div class="col-6 col-md-3"><div class="text-muted small">Total payable</div><div class="fs-5">{{ loan.total_payable()|inr }}</div></div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Paid so far</div><div class="fs-5 text-success">{{ loan.amount_paid()|inr }}</div></div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="fs-5">{{ loan.outstanding()|inr }}</div></div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="text-muted small">Total payable</div><div class="figure sm" style="font-size: 1.5rem;">{{ loan.total_payable()|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Paid so far</div><div class="figure text-success" style="font-size: 1.5rem; color: var(--ml-success);">{{ loan.amount_paid()|inr }}</div></div>
+      <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="figure" style="font-size: 1.5rem;">{{ loan.outstanding()|inr }}</div></div>
       <div class="col-6 col-md-3"><div class="text-muted small">Next due date</div>
-        <div class="fs-5">{{ next_due.due_date|date if next_due else "-" }}</div></div>
+        <div class="figure" style="font-size: 1.5rem;{% if next_due and next_due.is_overdue() %} color: var(--ml-danger);{% endif %}">{{ next_due.due_date|date if next_due else "-" }}</div></div>
     </div>
-    <div class="small mb-1">Installments paid: <strong>{{ paid_count }} of {{ loan.tenure_months }}</strong></div>
-    <div class="progress" role="progressbar" aria-label="Repayment progress"
-         aria-valuenow="{{ paid_count }}" aria-valuemin="0" aria-valuemax="{{ loan.tenure_months }}">
-      <div class="progress-bar bg-success" style="width: {{ (paid_count / loan.tenure_months * 100)|round(1) }}%"></div>
-    </div>
+    {{ m.progress_bar(paid_count, loan.tenure_months) }}
   </div>
-</div>
+</section>
 
-<h2 class="h5 mt-4">EMI schedule</h2>
+<h2 class="h4 mt-5 mb-3">EMI schedule</h2>
 {{ m.schedule_table(loan, pay_url=url_for('borrower.pay', loan_id=loan.id) if loan.status in ("Disbursed", "Repaying") else None) }}
+{% if loan.status in ("Disbursed", "Repaying") %}
+  <p class="small text-muted mt-2">Only the earliest pending installment can be paid. Payments are simulated.</p>
+{% endif %}
 {% endif %}
 {% endblock %}

@@ -3,40 +3,40 @@
 {% block title %}My Loans{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0"><i class="bi bi-wallet2"></i> My loans</h1>
-  <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Apply for loan</a>
+{{ m.breadcrumb([('Dashboard', url_for('borrower.dashboard')), ('My loans', none)]) }}
+<div class="page-head">
+  <div>
+    <h1>My loans</h1>
+    <p>Every application you have made, newest first.</p>
+  </div>
+  {% if loans %}<a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</a>{% endif %}
 </div>
 
 {% if loans %}
 <div class="table-responsive">
-  <table class="table table-hover align-middle bg-white">
-    <thead class="table-light">
+  <table class="table table-hover align-middle">
+    <thead>
       <tr>
         <th>Loan ID</th><th>Applied on</th><th class="text-end">Amount</th><th>Tenure</th>
-        <th class="text-end">EMI</th><th>Status</th><th></th>
+        <th class="text-end">EMI</th><th>Status</th><th><span class="visually-hidden">Action</span></th>
       </tr>
     </thead>
     <tbody>
       {% for loan in loans %}
       <tr>
-        <td class="fw-semibold">{{ loan.display_id() }}</td>
+        <td class="fw-bold">{{ loan.display_id() }}</td>
         <td>{{ loan.applied_on|date }}</td>
         <td class="text-end">{{ loan.amount|inr }}</td>
         <td>{{ loan.tenure_months }} months</td>
         <td class="text-end">{{ loan.emi_amount|inr }}</td>
         <td>{{ m.status_badge(loan.status) }}</td>
-        <td><a href="{{ url_for('borrower.loan_detail', loan_id=loan.id) }}" class="btn btn-outline-primary btn-sm">View</a></td>
+        <td class="text-end"><a href="{{ url_for('borrower.loan_detail', loan_id=loan.id) }}" class="btn btn-outline-primary btn-sm">View</a></td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 {% else %}
-<div class="text-center text-muted py-5 border rounded bg-white">
-  <i class="bi bi-inbox display-4"></i>
-  <p class="mt-2">You have not applied for any loans yet.</p>
-  <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary">Apply for your first loan</a>
-</div>
+  {{ m.empty_state("inbox", "You have not applied for any loans yet.", "Apply for your first loan", url_for('borrower.apply')) }}
 {% endif %}
 {% endblock %}

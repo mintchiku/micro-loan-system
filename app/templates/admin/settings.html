@@ -3,18 +3,23 @@
 {% block title %}Loan Settings{% endblock %}
 
 {% block content %}
+{{ m.breadcrumb([('Dashboard', url_for('admin.dashboard')), ('Loan settings', none)]) }}
 <div class="row justify-content-center">
   <div class="col-lg-8">
-    <h1 class="h3 mb-3"><i class="bi bi-sliders"></i> Loan settings</h1>
+    <div class="page-head">
+      <div>
+        <h1>Loan settings</h1>
+        <p>The limits borrowers see when they apply.</p>
+      </div>
+    </div>
 
-    <div class="alert alert-info">
-      <i class="bi bi-info-circle"></i>
-      Changes apply <strong>only to new applications</strong>. Loans that already exist keep the
-      interest rate they were given when they were applied for.
+    <div class="alert alert-info" role="note">
+      <i class="bi bi-info-circle-fill alert-icon" aria-hidden="true"></i>
+      <div class="alert-body">Changes apply <strong>only to new applications</strong>. Loans that already exist keep the interest rate they were given when they were applied for.</div>
     </div>
 
     <div class="card shadow-sm">
-      <div class="card-body">
+      <div class="card-body p-4">
         <form method="post" novalidate>
           {{ m.csrf_field() }}
           <div class="row">
@@ -29,10 +34,10 @@
           </div>
           <div class="row">
             <div class="col-sm-6">
-              {{ m.input_field("min_amount", "Minimum amount (₹)", values, errors, type="number", min=1, step="any") }}
+              {{ m.input_field("min_amount", "Minimum amount", values, errors, type="number", prefix="₹", min=1, step="any") }}
             </div>
             <div class="col-sm-6">
-              {{ m.input_field("max_amount", "Maximum amount (₹)", values, errors, type="number", min=1, step="any") }}
+              {{ m.input_field("max_amount", "Maximum amount", values, errors, type="number", prefix="₹", min=1, step="any") }}
             </div>
           </div>
           <div class="row">
@@ -43,7 +48,7 @@
               {{ m.input_field("max_tenure", "Maximum tenure (months)", values, errors, type="number", min=1, step=1) }}
             </div>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save settings</button>
+          <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-save" aria-hidden="true"></i> Save settings</button>
           <span class="text-muted small ms-2">Last updated {{ settings.updated_at|date }}</span>
         </form>
       </div>

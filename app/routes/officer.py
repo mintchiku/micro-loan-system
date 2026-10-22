@@ -40,7 +40,7 @@ def applications():
 def application_detail(loan_id):
     """Borrower + loan details, document, history, actions and (after disbursal) the schedule."""
     loan = db.get_or_404(Loan, loan_id)
-    return render_template("officer/application_detail.html", loan=loan)
+    return render_template("officer/application_detail.html", loan=loan, settings=loan_service.get_settings())
 
 
 @officer_bp.route("/applications/<int:loan_id>/<action>", methods=["POST"])

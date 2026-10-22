@@ -18,6 +18,12 @@ def inr(value):
     return f"{sign}₹{','.join(groups + [last_three])}.{paise}"
 
 
+def inr_short(value):
+    """Like inr but drops .00 for whole rupees (used in headlines), e.g. 5000 -> ₹5,000."""
+    text = inr(value)
+    return text[:-3] if text.endswith(".00") else text
+
+
 def format_date(value):
     """Show a date or datetime like 22 Oct 2026."""
     if value is None:

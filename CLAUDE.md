@@ -342,6 +342,32 @@ Every state-changing action is a **POST** (never a GET link).
 - Mobile-friendly via Bootstrap grid; tables wrapped in `.table-responsive`.
 - Empty states: friendly message instead of an empty table.
 
+### 9a. Visual theme (yellow and blue)
+
+Still Bootstrap 5 with no new libraries; the look lives in `static/css/style.css` (design tokens at the top)
+and the shared pieces in `templates/macros.html`. The status badge colour mapping above does not change.
+
+- **Rule of thumb:** blue is the voice (navigation, headings, links, tables), yellow is the finger (the ONE
+  next action on a screen). About 60% neutral, 30% blue, 10% yellow.
+- **Tokens:** primary blue `#0B3FA0`, navy `#081B44`, yellow `#FFC629` (always with navy text, never white),
+  canvas `#F5F7FB`, muted text `#55627D`. Fonts: system stack only (no web-font download).
+- **One enabled yellow button per page** (`btn-primary`). Approve/Reject keep green/red because the colour is the
+  meaning. Secondary actions are blue outline (`btn-outline-primary`).
+- **Layout (bank-style):** thin utility strip, white header with the current page underlined in yellow, breadcrumbs
+  on inner pages, cards with 16px radius, summary tiles on dashboards, multi-column footer on the landing page.
+- **Laws of UX applied** (lawsofux.com): Von Restorff (rare yellow), Hick's (at most 5 menu items per role),
+  Fitts's (buttons at least 44px tall, actions next to what they act on), Jakob's (familiar banking layout),
+  Common Region / Proximity (facts grouped in bordered cards), Miller's / Chunking (short cards, Indian digit
+  grouping), Goal-Gradient (installment progress bar with a yellow tip), Zeigarnik (loan step tracker shows the
+  steps still ahead), Peak-End (success banner on a fully repaid loan), Doherty (instant EMI preview, busy state on
+  submit), Tesler (the system does the maths), Aesthetic-Usability (one token set).
+- **Accessibility:** text pairs meet WCAG 4.5:1, focus is a yellow halo, icons are `aria-hidden`, tables and charts
+  have a text alternative, `prefers-reduced-motion` is respected.
+- **Phones:** the step tracker runs top to bottom and each schedule row becomes a two-line card so Pay is always
+  visible.
+- **Charts:** pie colours are stepped apart (checked with a palette validator); the pie needs a legend with counts
+  and a "View as table" fallback.
+
 ---
 
 ## 10. Non-functional requirements (what the code must respect)

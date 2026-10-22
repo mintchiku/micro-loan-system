@@ -4,6 +4,7 @@ from flask_login import current_user
 
 from app import db
 from app.models import Document
+from app.services import loan_service
 from app.utils.decorators import role_required
 
 main_bp = Blueprint("main", __name__)
@@ -11,8 +12,9 @@ main_bp = Blueprint("main", __name__)
 
 @main_bp.route("/")
 def index():
-    """Landing page that explains the service."""
-    return render_template("main/index.html")
+    """Landing page that explains the service, using the current loan limits."""
+    settings = loan_service.get_settings()
+    return render_template("main/index.html", settings=settings, sample=loan_service.sample_loan(settings))
 
 
 @main_bp.route("/documents/<int:document_id>")

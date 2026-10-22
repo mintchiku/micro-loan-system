@@ -2,10 +2,14 @@
 {% block title %}Something went wrong{% endblock %}
 
 {% block content %}
-<div class="text-center py-5">
-  <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
-  <h1 class="display-6 mt-3">500 &middot; Something went wrong</h1>
+<div class="error-page">
+  <div class="code">500<span>.</span></div>
+  <h1 class="h3 mt-3">Something went wrong</h1>
   <p class="text-muted">An unexpected error happened. Please try again.</p>
-  <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go to home page</a>
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for(current_user.role ~ '.dashboard') }}" class="btn btn-primary">Go to my dashboard</a>
+  {% else %}
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">Go to home page</a>
+  {% endif %}
 </div>
 {% endblock %}

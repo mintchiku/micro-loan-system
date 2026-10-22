@@ -6,29 +6,106 @@
 {% endmacro %}
 
 {# One form input with label, required marker, kept value and field-level error.
+   prefix: small box in front of the input (e.g. the rupee sign).
    Extra HTML attributes (min, max, step, ...) can be passed as keyword arguments. #}
-{% macro input_field(name, label, values, errors, type="text", required=true, help=None) %}
+{% macro input_field(name, label, values, errors, type="text", required=true, help=None, prefix=None) %}
 <div class="mb-3">
   <label for="{{ name }}" class="form-label">
     {{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}
   </label>
+  {% if prefix %}<div class="input-group{% if errors.get(name) %} has-validation{% endif %}"><span class="input-group-text">{{ prefix }}</span>{% endif %}
   <input type="{{ type }}" id="{{ name }}" name="{{ name }}"
          class="form-control{% if errors.get(name) %} is-invalid{% endif %}"
          value="{{ values.get(name, '') if type != 'password' else '' }}"
          {% if required %}required{% endif %} {{ kwargs|xmlattr }}>
-  {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
   {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+  {% if prefix %}</div>{% endif %}
+  {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
 </div>
 {% endmacro %}
 
-{# Coloured badge for a loan status; the same colours are used everywhere (CLAUDE.md §9) #}
+{# Coloured badge for a status; the same colours are used everywhere (CLAUDE.md section 9).
+   style.css turns these Bootstrap classes into soft pills with a dot. Overdue is the one solid badge. #}
 {% macro status_badge(status) %}
 {% set colors = {
   "Applied": "secondary", "Under Review": "info", "Approved": "primary", "Rejected": "danger",
   "Cancelled": "dark", "Disbursed": "warning", "Repaying": "warning", "Closed": "success",
   "Overdue": "danger", "Paid": "success", "Pending": "secondary"
 } %}
-<span class="badge text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+<span class="badge{{ ' badge-solid' if status == 'Overdue' }} text-bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+{% endmacro %}
+
+{# Breadcrumb trail. items: list of (label, url); the last item has url none. #}
+{% macro breadcrumb(items) %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    {% for label, url in items %}
+      <li class="breadcrumb-item{{ ' active' if not url }}"{% if not url %} aria-current="page"{% endif %}>
+        {% if url %}<a href="{{ url }}">{{ label }}</a>{% else %}{{ label }}{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</nav>
+{% endmacro %}
+
+{# Friendly empty state with one helpful button #}
+{% macro empty_state(icon, message, button_label=None, button_url=None, button_style="btn-primary") %}
+<div class="empty-state">
+  <i class="bi bi-{{ icon }}" aria-hidden="true"></i>
+  <p>{{ message }}</p>
+  {% if button_label %}<a href="{{ button_url }}" class="btn {{ button_style }}">{{ button_label }}</a>{% endif %}
+</div>
+{% endmacro %}
+
+{# Progress towards a goal: "3 of 6" with a yellow tip on the bar (goal-gradient) #}
+{% macro progress_bar(done, total, label="Installments paid") %}
+<div class="d-flex justify-content-between small mb-2"><span class="fw-semibold">{{ label }}</span><strong>{{ done }} of {{ total }}</strong></div>
+<div class="progress" role="progressbar" aria-label="{{ label }}" aria-valuenow="{{ done }}" aria-valuemin="0" aria-valuemax="{{ total }}">
+  <div class="progress-bar{{ ' is-empty' if done == 0 }}" style="width: {{ (done / total * 100)|round(1) }}%"></div>
+</div>
+{% endmacro %}
+
+{# Step tracker showing where a loan is in its life, and the steps still ahead #}
+{% macro loan_stepper(loan) %}
+{% if loan.status == 'Rejected' %}
+  {% set steps = ['Applied', 'Under Review', 'Rejected'] %}
+{% elif loan.status == 'Cancelled' %}
+  {% set steps = ['Applied', 'Cancelled'] %}
+{% else %}
+  {% set steps = ['Applied', 'Under Review', 'Approved', 'Disbursed', 'Repaying', 'Closed'] %}
+{% endif %}
+{% set current = steps.index(loan.status) %}
+{% set paid_count = loan.repayments|selectattr("status", "equalto", "Paid")|list|length %}
+<div class="surface-card p-4 overflow-auto">
+  <ol class="stepper" aria-label="Loan progress">
+    {% for step in steps %}
+      {% if loop.index0 < current or (loop.index0 == current and loan.status == 'Closed') %}{% set state = 'done' %}
+      {% elif loop.index0 == current and loan.status in ('Rejected', 'Cancelled') %}{% set state = 'stop' %}
+      {% elif loop.index0 == current %}{% set state = 'current' %}
+      {% else %}{% set state = 'todo' %}{% endif %}
+      <li class="step {{ state }}"{% if state == 'current' %} aria-current="step"{% endif %}>
+        <span class="step-dot" {% if state == 'stop' %}style="background: var(--ml-danger); border-color: var(--ml-danger); color: #fff;"{% endif %}>
+          {% if state == 'done' %}<i class="bi bi-check-lg" aria-hidden="true"></i>
+          {% elif state == 'stop' %}<i class="bi bi-x-lg" aria-hidden="true"></i>
+          {% else %}{{ loop.index }}{% endif %}
+        </span>
+        <div class="step-text">
+        <div class="step-label">{{ step }}</div>
+        <div class="step-meta">
+          {% if state == 'todo' %}
+          {% elif step == 'Applied' %}{{ loan.applied_on|date }}
+          {% elif step in ('Approved', 'Rejected') %}{{ loan.reviewed_on|date if loan.reviewed_on }}
+          {% elif step == 'Disbursed' %}{{ loan.disbursed_on|date if loan.disbursed_on }}
+          {% elif step == 'Repaying' %}{{ paid_count }} of {{ loan.tenure_months }} paid
+          {% elif step == 'Closed' %}{{ loan.closed_on|date if loan.closed_on }}
+          {% elif step == 'Cancelled' %}Cancelled
+          {% endif %}
+        </div>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+</div>
 {% endmacro %}
 
 {# EMI schedule table of a disbursed loan; overdue rows get a red badge.
@@ -36,29 +113,29 @@
 {% macro schedule_table(loan, pay_url=None) %}
 {% set next_due = loan.next_due_installment() %}
 <div class="table-responsive">
-  <table class="table table-sm align-middle bg-white mb-0">
-    <thead class="table-light">
+  <table class="table align-middle schedule">
+    <thead>
       <tr>
-        <th>No.</th><th>Due date</th><th class="text-end">Amount</th><th>Status</th><th>Paid on</th>
-        {% if pay_url %}<th></th>{% endif %}
+        <th class="d-none d-sm-table-cell">No.</th><th>Due date</th><th class="text-end">Amount</th><th>Status</th><th class="d-none d-sm-table-cell">Paid on</th>
+        {% if pay_url %}<th><span class="visually-hidden">Action</span></th>{% endif %}
       </tr>
     </thead>
     <tbody>
       {% for repayment in loan.repayments %}
       <tr class="{{ 'table-danger' if repayment.is_overdue() }}">
-        <td>{{ repayment.installment_no }}</td>
-        <td>{{ repayment.due_date|date }}</td>
-        <td class="text-end">{{ repayment.amount|inr }}</td>
-        <td>{{ status_badge("Overdue" if repayment.is_overdue() else repayment.status) }}</td>
-        <td>{{ repayment.paid_on|date }}</td>
+        <td class="d-none d-sm-table-cell">{{ repayment.installment_no }}</td>
+        <td class="text-nowrap c-due">{{ repayment.due_date|date }}</td>
+        <td class="text-end c-amount">{{ repayment.amount|inr }}</td>
+        <td class="c-status">{{ status_badge("Overdue" if repayment.is_overdue() else repayment.status) }}</td>
+        <td class="d-none d-sm-table-cell">{{ repayment.paid_on|date }}</td>
         {% if pay_url %}
-        <td>
+        <td class="text-end c-action">
           {% if next_due and repayment.id == next_due.id %}
           <form method="post" action="{{ pay_url }}"
                 onsubmit="return confirm('Pay installment {{ repayment.installment_no }} of {{ repayment.amount|inr }}? (simulated payment)');">
             {{ csrf_field() }}
             <input type="hidden" name="repayment_id" value="{{ repayment.id }}">
-            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-credit-card"></i> Pay</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-credit-card" aria-hidden="true"></i> Pay</button>
           </form>
           {% endif %}
         </td>

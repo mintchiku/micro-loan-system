@@ -13,10 +13,11 @@ from app.utils.validators import SETTING_FIELDS, validate_settings_form, validat
 
 admin_bp = Blueprint("admin", __name__)
 
-# Pie chart colours, close to the status badge colours (§9)
+# Pie chart colours: same hue families as the status badges (§9), stepped apart so neighbouring slices
+# stay distinguishable (checked with the dataviz palette validator)
 STATUS_COLORS = {
-    "Applied": "#6c757d", "Under Review": "#0dcaf0", "Approved": "#0d6efd", "Disbursed": "#ffc107",
-    "Repaying": "#fd7e14", "Closed": "#198754", "Rejected": "#dc3545", "Cancelled": "#212529",
+    "Applied": "#B4BED3", "Under Review": "#0C86B0", "Approved": "#1D4FBF", "Disbursed": "#F5B800",
+    "Repaying": "#8C5300", "Closed": "#6FD3AA", "Rejected": "#9E1F33", "Cancelled": "#2B3447",
 }
 
 

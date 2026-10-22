@@ -98,6 +98,13 @@ yourself in the demo script (step 3).
 6. Show the seeded **Repaying** loan with an overdue installment (log in as aman@example.com) and the **Closed**
    loan (sneha@example.com).
 
+## Design
+
+A yellow-and-blue theme on Bootstrap 5, inspired by the layout patterns of modern bank websites (thin utility strip,
+clean header, hero with a primary and a secondary button, summary tiles, multi-column footer) and built on the
+[Laws of UX](https://lawsofux.com/). Blue carries structure; yellow marks the one next action on each screen.
+The tokens are at the top of `app/static/css/style.css`, and the full rules are in CLAUDE.md section 9a.
+
 ## Folder structure
 
 ```

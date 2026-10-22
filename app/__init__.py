@@ -40,9 +40,10 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
     # Jinja filters: {{ loan.amount|inr }} and {{ loan.applied_on|date }}
-    from app.utils.formatters import format_date, inr
+    from app.utils.formatters import format_date, inr, inr_short
 
     app.jinja_env.filters["inr"] = inr
+    app.jinja_env.filters["inr_short"] = inr_short
     app.jinja_env.filters["date"] = format_date
 
     register_csrf(app)

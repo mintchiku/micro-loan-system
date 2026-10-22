@@ -6,120 +6,171 @@
 {% set borrower = loan.borrower %}
 {% set is_officer = current_user.role == "officer" %}
 {% set is_mine = loan.officer_id == current_user.id %}
+{% set decided = loan.status in ("Approved", "Rejected", "Disbursed", "Repaying", "Closed") %}
+{% set disbursed = loan.status in ("Disbursed", "Repaying", "Closed") %}
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Application {{ loan.display_id() }} {{ m.status_badge(loan.status) }}</h1>
-  <a href="{{ url_for('officer.applications') }}" class="btn btn-link"><i class="bi bi-arrow-left"></i> All applications</a>
+{{ m.breadcrumb([('Dashboard', url_for(current_user.role ~ '.dashboard')), ('Applications', url_for('officer.applications')), (loan.display_id(), none)]) }}
+<div class="page-head">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <h1>Application {{ loan.display_id() }}</h1>
+    {{ m.status_badge(loan.status) }}
+  </div>
 </div>
 
 {% if not is_officer %}
-  <div class="alert alert-secondary py-2"><i class="bi bi-eye"></i> Read-only view (admin).</div>
+  <div class="alert alert-secondary" role="status">
+    <i class="bi bi-eye-fill alert-icon" aria-hidden="true"></i><div class="alert-body">Read-only view (admin).</div>
+  </div>
 {% endif %}
 
-<div class="row g-4">
-  <div class="col-lg-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header"><i class="bi bi-person"></i> Borrower</div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-5">Name</dt><dd class="col-7">{{ borrower.name }}</dd>
-          <dt class="col-5">Email</dt><dd class="col-7 text-break">{{ borrower.email }}</dd>
-          <dt class="col-5">Phone</dt><dd class="col-7">{{ borrower.phone }}</dd>
-          <dt class="col-5">Monthly income</dt><dd class="col-7">{{ borrower.monthly_income|inr }}</dd>
+<div class="row g-4 align-items-start">
+  {# ---------- Facts ---------- #}
+  <div class="col-lg-8 d-flex flex-column gap-4">
+    <section class="card">
+      <h2 class="card-header h5 mb-0"><i class="bi bi-person text-primary" aria-hidden="true"></i> Borrower</h2>
+      <div class="card-body pt-2">
+        <dl class="facts">
+          <div><dt>Name</dt><dd>{{ borrower.name }}</dd></div>
+          <div><dt>Email</dt><dd>{{ borrower.email }}</dd></div>
+          <div><dt>Phone</dt><dd>{{ borrower.phone }}</dd></div>
+          <div><dt>Monthly income</dt><dd>{{ borrower.monthly_income|inr }}</dd></div>
         </dl>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <div class="col-lg-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header"><i class="bi bi-cash"></i> Loan</div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-6">Amount</dt><dd class="col-6">{{ loan.amount|inr }}</dd>
-          <dt class="col-6">Tenure</dt><dd class="col-6">{{ loan.tenure_months }} months</dd>
-          <dt class="col-6">Interest rate</dt><dd class="col-6">{{ "%g"|format(loan.interest_rate) }}% p.a.</dd>
-          <dt class="col-6">Monthly EMI</dt><dd class="col-6">{{ loan.emi_amount|inr }}</dd>
-          <dt class="col-6">EMI / income</dt>
-          <dd class="col-6">
-            {% if borrower.monthly_income %}{{ "%.1f"|format(loan.emi_amount / borrower.monthly_income * 100) }}%{% else %}-{% endif %}
-          </dd>
-          <dt class="col-6">Total payable</dt><dd class="col-6">{{ loan.total_payable()|inr }}</dd>
-          <dt class="col-6">Purpose</dt><dd class="col-6">{{ loan.purpose }}</dd>
-          <dt class="col-6">Document</dt>
-          <dd class="col-6">
-            {% if loan.document %}
-              <a href="{{ url_for('main.view_document', document_id=loan.document.id) }}" target="_blank">
-                <i class="bi bi-file-earmark"></i> View</a>
-            {% else %}<span class="text-muted">None</span>{% endif %}
-          </dd>
+    <section class="card">
+      <h2 class="card-header h5 mb-0"><i class="bi bi-credit-card-2-front text-primary" aria-hidden="true"></i> Loan</h2>
+      <div class="card-body pt-2">
+        <dl class="facts">
+          <div><dt>Amount</dt><dd>{{ loan.amount|inr }}</dd></div>
+          <div><dt>Tenure</dt><dd>{{ loan.tenure_months }} months</dd></div>
+          <div><dt>Interest rate</dt><dd>{{ "%g"|format(loan.interest_rate) }}% a year</dd></div>
+          <div><dt>Monthly EMI</dt><dd>{{ loan.emi_amount|inr }}</dd></div>
+          <div><dt>Total payable</dt><dd>{{ loan.total_payable()|inr }}</dd></div>
+          <div><dt>Purpose</dt><dd>{{ loan.purpose }}</dd></div>
+          <div><dt>Supporting document</dt>
+            <dd>
+              {% if loan.document %}
+                <a href="{{ url_for('main.view_document', document_id=loan.document.id) }}" target="_blank" class="text-decoration-none">
+                  <i class="bi bi-file-earmark" aria-hidden="true"></i> View document</a>
+              {% else %}<span class="text-muted fw-normal">None</span>{% endif %}
+            </dd>
+          </div>
         </dl>
       </div>
-    </div>
+    </section>
+
+    {# EMI against income: how close is this loan to the affordability limit? #}
+    {% if borrower.monthly_income %}
+    {% set pct = loan.emi_amount / borrower.monthly_income * 100 %}
+    {% set limit = settings.max_emi_to_income %}
+    <section class="card">
+      <div class="card-body">
+        <h2 class="h5">Affordability</h2>
+        <p class="text-muted mb-3">
+          The EMI is <strong class="{{ 'text-success' if pct <= limit else 'text-danger' }}">{{ "%.1f"|format(pct) }}%</strong>
+          of the borrower's monthly income. The current limit is {{ "%g"|format(limit) }}%.
+        </p>
+        <div class="progress" role="progressbar" aria-label="EMI as a share of the limit"
+             aria-valuenow="{{ [pct, limit]|min|round(1) }}" aria-valuemin="0" aria-valuemax="{{ limit }}">
+          <div class="progress-bar is-empty" style="width: {{ ([pct / limit * 100, 100]|min)|round(1) }}%"></div>
+        </div>
+        <div class="d-flex justify-content-between small text-muted mt-2"><span>0%</span><span>Limit {{ "%g"|format(limit) }}%</span></div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if loan.repayments %}
+    <section>
+      <h2 class="h5 mb-3">EMI schedule</h2>
+      {{ m.schedule_table(loan) }}
+    </section>
+    {% endif %}
   </div>
 
+  {# ---------- Decision and history ---------- #}
   <div class="col-lg-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header"><i class="bi bi-clock-history"></i> Status history</div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-6">Applied on</dt><dd class="col-6">{{ loan.applied_on|date }}</dd>
-          <dt class="col-6">Officer</dt><dd class="col-6">{{ loan.officer.name if loan.officer else "-" }}</dd>
-          <dt class="col-6">Reviewed on</dt><dd class="col-6">{{ loan.reviewed_on|date }}</dd>
-          <dt class="col-6">Disbursed on</dt><dd class="col-6">{{ loan.disbursed_on|date }}</dd>
-          <dt class="col-6">Closed on</dt><dd class="col-6">{{ loan.closed_on|date }}</dd>
-        </dl>
-        {% if loan.remarks %}
-          <div class="alert alert-{{ 'danger' if loan.status == 'Rejected' else 'info' }} small mt-3 mb-0">
-            <strong>Remarks:</strong> {{ loan.remarks }}</div>
+    <div class="sticky-side d-flex flex-column gap-4">
+
+      {% if is_officer %}
+        {% if loan.status == "Applied" %}
+        <section class="card shadow-sm"><div class="card-body">
+          <h2 class="h5">Review this application</h2>
+          <p class="text-muted small">Once you pick it up, only you can approve, reject or disburse it.</p>
+          <form method="post" action="{{ url_for('officer.application_action', loan_id=loan.id, action='pickup') }}">
+            {{ m.csrf_field() }}
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-hand-index" aria-hidden="true"></i> Pick up for review</button>
+          </form>
+        </div></section>
+        {% elif loan.status == "Under Review" and is_mine %}
+        <section class="card shadow-sm"><div class="card-body">
+          <h2 class="h5">Your decision</h2>
+          <p class="text-muted small">You picked this application up, so only you can approve, reject or disburse it.</p>
+          <form method="post">
+            {{ m.csrf_field() }}
+            <label for="remarks" class="form-label">Remarks <span class="fw-normal text-muted">(required to reject)</span></label>
+            <textarea id="remarks" name="remarks" rows="3" maxlength="300" class="form-control mb-3"></textarea>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="submit" class="btn btn-success flex-fill"
+                      formaction="{{ url_for('officer.application_action', loan_id=loan.id, action='approve') }}">
+                <i class="bi bi-check-lg" aria-hidden="true"></i> Approve</button>
+              <button type="submit" class="btn btn-outline-danger flex-fill"
+                      formaction="{{ url_for('officer.application_action', loan_id=loan.id, action='reject') }}"
+                      onclick="return confirm('Reject application {{ loan.display_id() }}?');">
+                <i class="bi bi-x-lg" aria-hidden="true"></i> Reject</button>
+            </div>
+          </form>
+        </div></section>
+        {% elif loan.status == "Approved" and is_mine %}
+        <section class="card shadow-sm"><div class="card-body">
+          <h2 class="h5">Ready to disburse</h2>
+          <p class="text-muted small">Disbursing creates the {{ loan.tenure_months }}-installment EMI schedule.</p>
+          <form method="post" action="{{ url_for('officer.application_action', loan_id=loan.id, action='disburse') }}"
+                onsubmit="return confirm('Disburse {{ loan.amount|inr }} for {{ loan.display_id() }}? The EMI schedule will be created.');">
+            {{ m.csrf_field() }}
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-cash-coin" aria-hidden="true"></i> Disburse {{ loan.amount|inr }}</button>
+          </form>
+        </div></section>
+        {% elif loan.status in ("Under Review", "Approved") %}
+        <div class="alert alert-secondary mb-0" role="status">
+          <i class="bi bi-lock-fill alert-icon" aria-hidden="true"></i>
+          <div class="alert-body">Assigned to {{ loan.officer.name }}. Only they can act on this application.</div>
+        </div>
         {% endif %}
-      </div>
+      {% endif %}
+
+      <section class="card">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Status history</h2>
+          <ol class="timeline">
+            <li class="done"><span class="dot"></span>
+              <div><div class="fw-bold">Applied</div><div class="small text-muted">{{ loan.applied_on|date }}</div></div></li>
+            {% if loan.status == "Cancelled" %}
+            <li class="done"><span class="dot"></span>
+              <div><div class="fw-bold">Cancelled</div><div class="small text-muted">Cancelled by the borrower</div></div></li>
+            {% else %}
+            <li class="{{ 'done' if loan.officer_id else 'current' }}"><span class="dot"></span>
+              <div><div class="{{ 'fw-bold' if loan.officer_id else 'fw-semibold' }}">Under review</div>
+                <div class="small text-muted">{{ "Picked up by " ~ loan.officer.name if loan.officer else "Waiting for an officer" }}</div></div></li>
+            <li class="{{ 'done' if decided else ('current' if loan.status == 'Under Review' else '') }}"><span class="dot"></span>
+              <div><div class="{{ 'fw-bold' if decided else 'fw-semibold' }}">{{ "Rejected" if loan.status == "Rejected" else ("Approved" if decided else "Approved or rejected") }}</div>
+                <div class="small text-muted">{{ loan.reviewed_on|date if decided else ("Waiting for the decision" if loan.officer_id else "") }}</div></div></li>
+            {% if loan.status != "Rejected" %}
+            <li class="{{ 'done' if disbursed else ('current' if loan.status == 'Approved' else '') }}"><span class="dot"></span>
+              <div><div class="{{ 'fw-bold' if disbursed else 'fw-semibold' }}">Disbursed</div>
+                <div class="small text-muted">{{ loan.disbursed_on|date if disbursed else ("Ready to disburse" if loan.status == "Approved" else "") }}</div></div></li>
+            {% endif %}
+            {% endif %}
+          </ol>
+          {% if loan.remarks %}
+            <div class="alert alert-{{ 'danger' if loan.status == 'Rejected' else 'info' }} small mt-4 mb-0">
+              <i class="bi bi-chat-left-text-fill alert-icon" aria-hidden="true"></i>
+              <div class="alert-body"><strong>Remarks:</strong> {{ loan.remarks }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </section>
     </div>
   </div>
 </div>
-
-{# ---------- Actions: only the ones valid for this status and this officer (rule 11) ---------- #}
-{% if is_officer %}
-  {% if loan.status == "Applied" %}
-    <div class="card shadow-sm mt-4"><div class="card-body">
-      <form method="post" action="{{ url_for('officer.application_action', loan_id=loan.id, action='pickup') }}">
-        {{ m.csrf_field() }}
-        <button type="submit" class="btn btn-primary"><i class="bi bi-hand-index"></i> Pick up for review</button>
-        <span class="text-muted small ms-2">Only you will be able to approve, reject or disburse it.</span>
-      </form>
-    </div></div>
-  {% elif loan.status == "Under Review" and is_mine %}
-    <div class="card shadow-sm mt-4"><div class="card-body">
-      <form method="post">
-        {{ m.csrf_field() }}
-        <label for="remarks" class="form-label">Remarks <span class="text-muted small">(required to reject)</span></label>
-        <textarea id="remarks" name="remarks" rows="2" maxlength="300" class="form-control mb-3"></textarea>
-        <button type="submit" class="btn btn-success"
-                formaction="{{ url_for('officer.application_action', loan_id=loan.id, action='approve') }}">
-          <i class="bi bi-check-lg"></i> Approve</button>
-        <button type="submit" class="btn btn-danger"
-                formaction="{{ url_for('officer.application_action', loan_id=loan.id, action='reject') }}"
-                onclick="return confirm('Reject application {{ loan.display_id() }}?');">
-          <i class="bi bi-x-lg"></i> Reject</button>
-      </form>
-    </div></div>
-  {% elif loan.status == "Approved" and is_mine %}
-    <div class="card shadow-sm mt-4"><div class="card-body">
-      <form method="post" action="{{ url_for('officer.application_action', loan_id=loan.id, action='disburse') }}"
-            onsubmit="return confirm('Disburse {{ loan.amount|inr }} for {{ loan.display_id() }}? The EMI schedule will be created.');">
-        {{ m.csrf_field() }}
-        <button type="submit" class="btn btn-warning"><i class="bi bi-cash-coin"></i> Disburse {{ loan.amount|inr }}</button>
-      </form>
-    </div></div>
-  {% elif loan.status in ("Under Review", "Approved") %}
-    <div class="alert alert-secondary mt-4">
-      <i class="bi bi-lock"></i> Assigned to {{ loan.officer.name }}. Only they can act on this application.
-    </div>
-  {% endif %}
-{% endif %}
-
-{% if loan.repayments %}
-  <h2 class="h5 mt-4">EMI schedule</h2>
-  {{ m.schedule_table(loan) }}
-{% endif %}
 {% endblock %}

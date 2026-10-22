@@ -3,64 +3,59 @@
 {% block title %}Officer Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">Welcome, {{ current_user.name }}</h1>
+<div class="page-head">
+  <div>
+    <h1>Welcome back, {{ current_user.name.split()[0] }}</h1>
+    <p>Here is what needs your attention.</p>
+  </div>
+</div>
 
 <div class="row g-3 mb-4">
   <div class="col-md-4">
-    <a href="{{ url_for('officer.applications', status='Applied') }}" class="card shadow-sm text-decoration-none h-100">
-      <div class="card-body">
-        <div class="text-muted small">New applications</div>
-        <div class="display-6">{{ summary.new_count }}</div>
-        <div class="small text-primary">Waiting for an officer &rarr;</div>
-      </div>
+    <a href="{{ url_for('officer.applications', status='Applied') }}" class="stat-tile">
+      <div class="stat-label">New applications</div>
+      <div class="stat-value">{{ summary.new_count }}</div>
+      <div class="stat-hint">Waiting for an officer &rarr;</div>
     </a>
   </div>
   <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">Under my review</div>
-        <div class="display-6">{{ summary.review_count }}</div>
-        <div class="small text-muted">Approve or reject</div>
-      </div>
+    <div class="stat-tile">
+      <div class="stat-label">Under my review</div>
+      <div class="stat-value">{{ summary.review_count }}</div>
+      <div class="stat-hint">Approve or reject</div>
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">Approved, awaiting disbursal</div>
-        <div class="display-6">{{ summary.approved_count }}</div>
-        <div class="small text-muted">Ready to disburse</div>
-      </div>
+    <div class="stat-tile">
+      <div class="stat-label">Approved, awaiting disbursal</div>
+      <div class="stat-value">{{ summary.approved_count }}</div>
+      <div class="stat-hint">Ready to disburse</div>
     </div>
   </div>
 </div>
 
-<h2 class="h5">My pending work</h2>
+<h2 class="h5 mb-3">My pending work</h2>
 {% if summary.my_pending %}
 <div class="table-responsive">
-  <table class="table table-hover align-middle bg-white">
-    <thead class="table-light">
-      <tr><th>Loan ID</th><th>Borrower</th><th class="text-end">Amount</th><th>Status</th><th>Next step</th><th></th></tr>
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr><th>Loan ID</th><th>Borrower</th><th class="text-end">Amount</th><th>Status</th><th>Next step</th><th><span class="visually-hidden">Action</span></th></tr>
     </thead>
     <tbody>
       {% for loan in summary.my_pending %}
       <tr>
-        <td class="fw-semibold">{{ loan.display_id() }}</td>
+        <td class="fw-bold">{{ loan.display_id() }}</td>
         <td>{{ loan.borrower.name }}</td>
         <td class="text-end">{{ loan.amount|inr }}</td>
         <td>{{ m.status_badge(loan.status) }}</td>
         <td>{{ "Approve or reject" if loan.status == "Under Review" else "Disburse" }}</td>
-        <td><a href="{{ url_for('officer.application_detail', loan_id=loan.id) }}" class="btn btn-outline-primary btn-sm">Open</a></td>
+        <td class="text-end"><a href="{{ url_for('officer.application_detail', loan_id=loan.id) }}" class="btn btn-outline-primary btn-sm">Open</a></td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 {% else %}
-<div class="text-center text-muted py-5 border rounded bg-white">
-  <i class="bi bi-check2-circle display-4"></i>
-  <p class="mt-2">Nothing pending. Pick up a new application to start reviewing.</p>
-  <a href="{{ url_for('officer.applications', status='Applied') }}" class="btn btn-primary">View new applications</a>
-</div>
+  {{ m.empty_state("check2-circle", "Nothing pending. Pick up a new application to start reviewing.", "View new applications", url_for('officer.applications', status='Applied')) }}
 {% endif %}
 {% endblock %}

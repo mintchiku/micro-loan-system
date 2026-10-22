@@ -3,47 +3,97 @@
 {% block title %}Reports{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4"><i class="bi bi-bar-chart"></i> Reports</h1>
+{{ m.breadcrumb([('Dashboard', url_for('admin.dashboard')), ('Reports', none)]) }}
+<div class="page-head">
+  <div>
+    <h1>Reports</h1>
+    <p>Where loans stand, how much was disbursed, and what is overdue.</p>
+  </div>
+</div>
 
+{% set total_loans = status_chart["values"]|sum %}
 <div class="row g-4 mb-4">
-  <div class="col-lg-5">
-    <div class="card shadow-sm h-100">
-      <div class="card-header">Loans by status</div>
+  {# ---------- Loans by status (pie) ---------- #}
+  <div class="col-lg-6">
+    <section class="card h-100">
+      <h2 class="card-header h5 mb-0">Loans by status</h2>
       <div class="card-body">
-        {% if status_chart["values"]|sum %}
-          <canvas id="status-chart" height="260"></canvas>
+        {% if total_loans %}
+          <div class="row g-3 align-items-center">
+            <div class="col-sm-6"><div style="position: relative; height: 240px;"><canvas id="status-chart" aria-label="Pie chart of loans by status. A table with the same numbers is below." role="img"></canvas></div></div>
+            <div class="col-sm-6">
+              {# Legend with counts: identity never relies on colour alone #}
+              <ul class="list-unstyled mb-0">
+                {% for label in status_chart.labels %}
+                  {% set count = status_chart["values"][loop.index0] %}
+                  {% if count %}
+                  <li class="d-flex align-items-center gap-2 py-1">
+                    <span style="width: 12px; height: 12px; border-radius: 3px; background: {{ status_chart.colors[loop.index0] }}; flex: none;" aria-hidden="true"></span>
+                    <span class="flex-grow-1">{{ label }}</span><strong>{{ count }}</strong>
+                  </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          <details class="mt-3">
+            <summary class="fw-semibold" style="cursor: pointer;">View as table</summary>
+            <table class="table table-sm mt-2 mb-0">
+              <thead><tr><th>Status</th><th class="text-end">Loans</th><th class="text-end">Share</th></tr></thead>
+              <tbody>
+                {% for label in status_chart.labels %}
+                  {% set count = status_chart["values"][loop.index0] %}
+                  <tr><td>{{ label }}</td><td class="text-end">{{ count }}</td><td class="text-end">{{ "%.0f"|format(count / total_loans * 100) }}%</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </details>
         {% else %}
           <p class="text-muted text-center my-5">No loans yet.</p>
         {% endif %}
       </div>
-    </div>
+    </section>
   </div>
-  <div class="col-lg-7">
-    <div class="card shadow-sm h-100">
-      <div class="card-header">Amount disbursed per month (last 6 months)</div>
+
+  {# ---------- Disbursed per month (bar) ---------- #}
+  <div class="col-lg-6">
+    <section class="card h-100">
+      <h2 class="card-header h5 mb-0">Amount disbursed per month (last 6 months)</h2>
       <div class="card-body">
         {% if month_chart["values"]|sum %}
-          <canvas id="month-chart" height="200"></canvas>
+          <div style="position: relative; height: 280px;"><canvas id="month-chart" aria-label="Bar chart of the amount disbursed in each of the last 6 months. A table with the same numbers is below." role="img"></canvas></div>
+          <details class="mt-3">
+            <summary class="fw-semibold" style="cursor: pointer;">View as table</summary>
+            <table class="table table-sm mt-2 mb-0">
+              <thead><tr><th>Month</th><th class="text-end">Disbursed</th></tr></thead>
+              <tbody>
+                {% for label in month_chart.labels %}
+                  <tr><td>{{ label }}</td><td class="text-end">{{ month_chart["values"][loop.index0]|inr }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </details>
         {% else %}
           <p class="text-muted text-center my-5">Nothing has been disbursed in the last 6 months.</p>
         {% endif %}
       </div>
-    </div>
+    </section>
   </div>
 </div>
 
-<h2 class="h5">Overdue installments</h2>
+{# ---------- Overdue installments ---------- #}
+<h2 class="h5 mb-3">Overdue installments</h2>
 {% if overdue %}
 <div class="table-responsive">
-  <table class="table table-hover align-middle bg-white">
-    <thead class="table-light">
+  <table class="table table-hover align-middle">
+    <thead>
       <tr><th>Borrower</th><th>Loan</th><th>Installment</th><th>Due date</th><th>Days late</th><th class="text-end">Amount</th></tr>
     </thead>
     <tbody>
       {% for item in overdue %}
       <tr>
         <td>{{ item.loan.borrower.name }}</td>
-        <td><a href="{{ url_for('officer.application_detail', loan_id=item.loan.id) }}">{{ item.loan.display_id() }}</a></td>
+        <td><a href="{{ url_for('officer.application_detail', loan_id=item.loan.id) }}" class="fw-bold text-decoration-none">{{ item.loan.display_id() }}</a></td>
         <td>{{ item.installment_no }} of {{ item.loan.tenure_months }}</td>
         <td>{{ item.due_date|date }} {{ m.status_badge("Overdue") }}</td>
         <td>{{ (today - item.due_date).days }}</td>
@@ -54,10 +104,7 @@
   </table>
 </div>
 {% else %}
-<div class="text-center text-muted py-4 border rounded bg-white">
-  <i class="bi bi-emoji-smile display-5"></i>
-  <p class="mt-2 mb-0">No overdue installments.</p>
-</div>
+  {{ m.empty_state("emoji-smile", "No overdue installments.") }}
 {% endif %}
 {% endblock %}
 
@@ -74,9 +121,23 @@
       type: "pie",
       data: {
         labels: statusData.labels,
-        datasets: [{ data: statusData.values, backgroundColor: statusData.colors }],
+        // 2px white gap between slices keeps neighbours apart without relying on colour alone
+        datasets: [{ data: statusData.values, backgroundColor: statusData.colors, borderColor: "#FFFFFF", borderWidth: 2, hoverOffset: 6 }],
       },
-      options: { plugins: { legend: { position: "bottom" } } },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },  // the HTML legend beside the chart carries the names and counts
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                return " " + ctx.label + ": " + ctx.parsed + (ctx.parsed === 1 ? " loan" : " loans") + " (" + Math.round((ctx.parsed / total) * 100) + "%)";
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -86,11 +147,22 @@
       type: "bar",
       data: {
         labels: monthData.labels,
-        datasets: [{ label: "Disbursed (₹)", data: monthData.values, backgroundColor: "#0d6efd" }],
+        datasets: [{
+          label: "Disbursed (₹)", data: monthData.values, backgroundColor: "#0B3FA0",
+          borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false, maxBarThickness: 48,
+        }],
       },
       options: {
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { callback: (v) => "₹" + v.toLocaleString("en-IN") } } },
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },  // one series: the card title names it
+          tooltip: { callbacks: { label: (ctx) => " ₹" + ctx.parsed.y.toLocaleString("en-IN") } },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#55627D" } },
+          y: { beginAtZero: true, border: { display: false }, grid: { color: "#E6EAF3" },
+               ticks: { color: "#55627D", callback: (v) => "₹" + v.toLocaleString("en-IN") } },
+        },
       },
     });
   }

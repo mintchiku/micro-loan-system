@@ -3,81 +3,130 @@
 {% block title %}Borrower Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-  <h1 class="h3 mb-0">Welcome, {{ current_user.name }}</h1>
-  {% if active_loan %}
-    {# Rule 3: one active loan at a time #}
-    <button class="btn btn-primary" disabled title="You already have an active loan">
-      <i class="bi bi-plus-lg"></i> Apply for loan</button>
-  {% else %}
-    <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Apply for loan</a>
-  {% endif %}
+{# What happens next, for loans that have no installments yet #}
+{% set next_step = {
+  "Applied": "Waiting for a loan officer to pick up your application.",
+  "Under Review": "An officer is reviewing your application.",
+  "Approved": "Approved. The officer will disburse the loan next."
+} %}
+
+<div class="page-head">
+  <div>
+    <h1>Welcome back, {{ current_user.name.split()[0] }}</h1>
+    <p>Here is where your loan stands today.</p>
+  </div>
+  <div class="text-lg-end">
+    {% if active_loan %}
+      {# Rule 3: one active loan at a time #}
+      <button class="btn btn-primary" disabled title="You already have an active loan"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</button>
+      <div class="small text-muted mt-1">Available again once your current loan is closed.</div>
+    {% else %}
+      <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Apply for loan</a>
+    {% endif %}
+  </div>
 </div>
 
 {% if overdue_count %}
-  <div class="alert alert-danger">
-    <i class="bi bi-exclamation-triangle"></i>
-    You have {{ overdue_count }} overdue installment{{ "s" if overdue_count > 1 }}. Please pay as soon as possible.
-    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="alert-link">Pay now</a>
-  </div>
-{% endif %}
-
-{% if active_loan %}
-<div class="card shadow-sm mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span>Active loan <strong>{{ active_loan.display_id() }}</strong></span>
-    {{ m.status_badge(active_loan.status) }}
-  </div>
-  <div class="card-body">
-    <div class="row text-center g-3">
-      <div class="col-6 col-md-3"><div class="text-muted small">Amount</div><div class="fs-5">{{ active_loan.amount|inr }}</div></div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Monthly EMI</div><div class="fs-5">{{ active_loan.emi_amount|inr }}</div></div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Next due</div>
-        <div class="fs-5">
-          {% if next_due %}{{ next_due.amount|inr }}
-            <div class="small {{ 'text-danger' if next_due.is_overdue() else 'text-muted' }}">on {{ next_due.due_date|date }}</div>
-          {% else %}-{% endif %}
-        </div>
-      </div>
-      <div class="col-6 col-md-3"><div class="text-muted small">Outstanding</div><div class="fs-5">{{ active_loan.outstanding()|inr }}</div></div>
+  <div class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle-fill alert-icon" aria-hidden="true"></i>
+    <div class="alert-body">
+      <strong>{{ overdue_count }} overdue installment{{ "s" if overdue_count > 1 }}.</strong>
+      Installment {{ next_due.installment_no }} of {{ active_loan.tenure_months }} was due on {{ next_due.due_date|date }}.
+      <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="alert-link">See the schedule</a>
     </div>
   </div>
-  <div class="card-footer bg-white">
-    <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-outline-primary btn-sm">
-      {{ "View schedule & pay" if next_due else "View details" }}</a>
-  </div>
-</div>
-{% else %}
-<div class="text-center text-muted py-5 border rounded bg-white mb-4">
-  <i class="bi bi-cash-stack display-4"></i>
-  <p class="mt-2">You have no active loan right now.</p>
-  <a href="{{ url_for('borrower.apply') }}" class="btn btn-primary">Apply for a loan</a>
-</div>
 {% endif %}
 
-<div class="d-flex justify-content-between align-items-center mb-2">
-  <h2 class="h5 mb-0">Recent payments</h2>
-  <a href="{{ url_for('borrower.loans') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-wallet2"></i> All my loans</a>
+<div class="row g-4 align-items-start">
+  <div class="col-lg-8">
+    {% if active_loan %}
+    <section class="card shadow-sm">
+      <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <div class="eyebrow text-muted">Active loan</div>
+          <div class="h4 mb-0">{{ active_loan.display_id() }}</div>
+        </div>
+        {{ m.status_badge(active_loan.status) }}
+      </div>
+      <div class="card-body">
+        {% if next_due %}
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+              <div class="text-muted fw-semibold small">Next installment</div>
+              <div class="figure" style="font-size: 2.5rem;">{{ next_due.amount|inr }}</div>
+              {% if next_due.is_overdue() %}
+                <div class="small fw-bold text-danger">Overdue since {{ next_due.due_date|date }}</div>
+              {% else %}
+                <div class="small text-muted">Due on {{ next_due.due_date|date }}</div>
+              {% endif %}
+            </div>
+            <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-primary btn-lg">
+              Pay installment {{ next_due.installment_no }} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="mt-4">
+            {{ m.progress_bar(active_loan.repayments|selectattr("status", "equalto", "Paid")|list|length, active_loan.tenure_months) }}
+          </div>
+          <div class="stat-strip mt-4">
+            <div><div class="stat-label">Paid so far</div><div class="stat-value text-success">{{ active_loan.amount_paid()|inr }}</div></div>
+            <div><div class="stat-label">Outstanding</div><div class="stat-value">{{ active_loan.outstanding()|inr }}</div></div>
+            <div><div class="stat-label">Total payable</div><div class="stat-value">{{ active_loan.total_payable()|inr }}</div></div>
+          </div>
+        {% else %}
+          <p class="fs-5 mb-4">{{ next_step.get(active_loan.status, "Your loan is being processed.") }}</p>
+          <div class="stat-strip">
+            <div><div class="stat-label">Amount</div><div class="stat-value">{{ active_loan.amount|inr }}</div></div>
+            <div><div class="stat-label">Tenure</div><div class="stat-value">{{ active_loan.tenure_months }} months</div></div>
+            <div><div class="stat-label">Monthly EMI</div><div class="stat-value">{{ active_loan.emi_amount|inr }}</div></div>
+          </div>
+          <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="btn btn-outline-primary mt-4">View details</a>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        {{ active_loan.amount|inr }} over {{ active_loan.tenure_months }} months at {{ "%g"|format(active_loan.interest_rate) }}% a year
+        {% if active_loan.disbursed_on %}&middot; disbursed {{ active_loan.disbursed_on|date }}{% endif %}
+      </div>
+    </section>
+    {% else %}
+      {{ m.empty_state("cash-stack", "You have no active loan right now. Use the Apply for loan button to start.") }}
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4 d-flex flex-column gap-4">
+    <section class="card">
+      <div class="card-body">
+        <h2 class="h5 mb-2">Quick links</h2>
+        {% if active_loan %}
+        <a href="{{ url_for('borrower.loan_detail', loan_id=active_loan.id) }}" class="list-link">
+          <span class="lead-icon"><span class="icon-tile sm"><i class="bi bi-calendar3" aria-hidden="true"></i></span>{{ "Repayment schedule" if active_loan.repayments else "Loan details" }}</span>
+          <i class="bi bi-chevron-right text-muted" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('borrower.loans') }}" class="list-link">
+          <span class="lead-icon"><span class="icon-tile sm"><i class="bi bi-list-check" aria-hidden="true"></i></span>All my loans</span>
+          <i class="bi bi-chevron-right text-muted" aria-hidden="true"></i>
+        </a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body">
+        <h2 class="h5 mb-2">Recent payments</h2>
+        {% if recent_payments %}
+          {% for payment in recent_payments %}
+          <div class="d-flex align-items-center gap-3 py-3 border-top">
+            <span class="icon-tile sm rounded-circle" style="background: #DDF3E8; color: var(--ml-success);"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Installment {{ payment.installment_no }} of {{ payment.loan.tenure_months }}</div>
+              <div class="small text-muted">{{ payment.paid_on|date }} &middot; {{ payment.loan.display_id() }}</div>
+            </div>
+            <strong>{{ payment.amount|inr }}</strong>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted border-top pt-3 mb-0">No payments yet. Your EMI payments will appear here.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
 </div>
-{% if recent_payments %}
-<div class="table-responsive">
-  <table class="table table-sm align-middle bg-white">
-    <thead class="table-light">
-      <tr><th>Paid on</th><th>Loan</th><th>Installment</th><th class="text-end">Amount</th></tr>
-    </thead>
-    <tbody>
-      {% for payment in recent_payments %}
-      <tr>
-        <td>{{ payment.paid_on|date }}</td>
-        <td>{{ payment.loan.display_id() }}</td>
-        <td>{{ payment.installment_no }} of {{ payment.loan.tenure_months }}</td>
-        <td class="text-end">{{ payment.amount|inr }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-{% else %}
-<p class="text-muted border rounded bg-white p-3">No payments yet. Your EMI payments will appear here.</p>
-{% endif %}
 {% endblock %}

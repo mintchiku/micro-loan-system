@@ -61,6 +61,16 @@ def get_settings():
     return db.session.get(LoanSetting, 1)
 
 
+def sample_loan(settings):
+    """Example loan for the landing page, built from the current settings so it is never out of date."""
+    amount = min(max(50000, settings.min_amount), settings.max_amount)  # keep the example inside the limits
+    tenure = min(max(12, settings.min_tenure), settings.max_tenure)
+    emi = calculate_emi(amount, settings.interest_rate, tenure)
+    total = round(emi * tenure, 2)
+    return {"amount": amount, "tenure": tenure, "rate": settings.interest_rate,
+            "emi": emi, "total": total, "interest": round(total - amount, 2)}
+
+
 def get_active_loan(borrower):
     """Return the borrower's current active loan, or None."""
     return (Loan.query.filter(Loan.borrower_id == borrower.id, Loan.status.in_(ACTIVE_STATUSES))

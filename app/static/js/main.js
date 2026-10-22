@@ -19,6 +19,28 @@ function formatInr(value) {
   return "₹" + value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Busy state: the moment a form is submitted, its button shows a spinner and ignores second clicks
+// (instant feedback, and no double payments). The button is NOT disabled, so its value still posts.
+document.addEventListener("submit", function (event) {
+  if (event.defaultPrevented) return; // a confirm() dialog was cancelled
+  const form = event.target;
+  const button = event.submitter || form.querySelector('button[type="submit"]');
+  if (!button || button.classList.contains("is-busy")) return;
+  button.classList.add("is-busy");
+  button.setAttribute("aria-busy", "true");
+  button.insertAdjacentHTML("afterbegin", '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>');
+});
+
+// A page restored from the browser's back/forward cache must not stay in the busy state
+window.addEventListener("pageshow", function () {
+  document.querySelectorAll(".is-busy").forEach(function (button) {
+    button.classList.remove("is-busy");
+    button.removeAttribute("aria-busy");
+    const spinner = button.querySelector(".spinner-border");
+    if (spinner) spinner.remove();
+  });
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("apply-form");
   if (!form) return; // not on the Apply page
