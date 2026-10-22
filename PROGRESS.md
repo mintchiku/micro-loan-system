@@ -569,3 +569,54 @@ All checks ran on temporary data; the live `instance/microloan.db`, `uploads/` a
   `test_state_machine.py`, `test_officer_flow.py`, `test_reassignment.py`, `test_repayment.py`, `test_admin.py`, `test_reports.py`,
   `test_permissions.py`, `test_security.py`, `test_ui.py`, `test_performance.py`, `test_architecture.py`, `test_seed.py`, `test_demo_flow.py`).
 - Repository-state statements of the gist (section 13) are refreshed in Part 5, when the final commits exist.
+
+---
+
+## Part 4: pytest test suite
+
+### Plan (files to create or change)
+- `requirements-dev.txt` (new, dev only): `-r requirements.txt` and `pytest`. `requirements.txt` stays unchanged.
+- `tests/conftest.py` and `tests/support.py`: a fixture that builds the app on a **temporary database** (one seeded template file per
+  session, copied for each test) with a temporary upload folder; helpers for login and for POSTs that carry the CSRF token.
+  Nothing touches `instance/microloan.db` or `uploads/`.
+- One test module per area, named as in the SRS traceability matrix: `test_emi`, `test_state_machine`, `test_permissions`, `test_rules`,
+  `test_uploads`, `test_auth`, `test_officer_flow`, `test_reassignment`, `test_repayment`, `test_admin`, `test_reports`, `test_security`,
+  `test_ui`, `test_performance`, `test_architecture`, `test_seed`, `test_demo_flow`.
+- Coverage required by the brief: EMI maths; every allowed transition and rejection of all other (from, to, actor) combinations; the
+  permission matrix; rules R1 to R11; every Part 1 and Part 2 fix; CSRF rejection; rollback on a failed commit.
+- README: the command to run the tests; the testing section of the technical document and its slide get the real counts.
+- No application code changes.
+
+### Verified (Part 4)
+`python -m pytest` on a temporary database (the live `instance/microloan.db`, `uploads/` and the server on port 5000 were not used):
+**1,370 passed, 1 expected failure (documented known gap), 67 seconds.**
+
+| Module (`tests/`) | Tests | Covers |
+|---|--:|---|
+| `test_state_machine.py` | 397 | all 384 (from, to, actor) combinations, the 7 transitions, R11, a full lifecycle |
+| `test_emi.py` | 239 | EMI formula and amortisation check, month ends, schedule totals to the paisa (rates 0, 12, 14 x tenures 3 to 24 x 3 amounts) |
+| `test_ui.py` | 119 | Part 1a apply button, one yellow action per page (25 pages), badges, formats, confirm dialogs, empty states, menus, contrast |
+| `test_permissions.py` | 108 | 20 routes x 4 roles, ownership, wrong HTTP methods |
+| `test_security.py` | 73 | CSRF on all 11 POST routes (4 token variants each), rollback of every service function, 500/404, XSS, hostile search text |
+| `test_rules.py` | 58 | R1 to R4, R6, decimals (Part 2a), all-errors-together |
+| `test_officer_flow.py` | 57 | list, filter, search, detail, pick up, approve, reject, disburse, dashboard |
+| `test_admin.py` | 56 | users, toggle, create officer, settings validation |
+| `test_auth.py` | 51 | register, login, logout POST (2f), duplicate email incl. race (2d), cookies (2e) |
+| `test_reassignment.py` | 43 | Part 2c |
+| `test_uploads.py` | 38 | Part 2b, R10, protected viewing |
+| `test_architecture.py` | 36 | no commit or status change in routes, docstrings, libraries |
+| `test_repayment.py` | 28 | R8, R9, Repaying, Closed |
+| `test_performance.py` | 22 | every page under 2 s |
+| `test_seed.py` | 21 | demo accounts, loans, overdue installment |
+| `test_reports.py` | 21 | totals, `percent_shares` (Part 1b), charts, overdue table |
+| `test_demo_flow.py` | 4 | CLAUDE.md section 13 end to end |
+
+- **Mutation check** (on a copy of the project, never the real files): 14 deliberate breakages (a forbidden status move, decimals unchecked, CSRF off,
+  reassign for any status, reports open to all roles, upload content unchecked, out-of-order payment, logout accepting GET, no SameSite, shares not
+  adding to 100, Repaying not active, EMI rounded to 1 decimal, officers allowed to reassign, uploaded file left behind) were all caught, each by a real
+  test failure: **14 / 14**.
+- Two vacuous assertions that I had written by mistake were found and replaced by real ones while building the suite.
+- **Known gap kept visible:** `test_decorative_icons_are_hidden_from_screen_readers` is `xfail(strict=True)`: the shield icon in the utility bar of `base.html` has no
+  `aria-hidden="true"` (CLAUDE.md 9a says all icons are hidden). One attribute fixes it; not changed because no application code change was authorised in Part 4.
+- Also updated: README (how to run), CLAUDE.md (`requirements-dev.txt`, `tests/`), handoff gist, technical document (section 16, slide 23, viva answers,
+  limitations). `requirements.txt` is unchanged; `pytest.ini` turns the pytest cache off so no `.pytest_cache` folder appears.

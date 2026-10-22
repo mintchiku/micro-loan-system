@@ -310,10 +310,10 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 
 ## 11. Verification status (be honest about it)
 
-- **Automated tests are not in the repository.** During the build, Claude used scripts with the Flask test client on a temporary database; they lived in a temporary scratchpad folder and are gone or unreachable. Results recorded in `PROGRESS.md`: Phase 2: 27/27, Phase 4: 52/52, Phase 5: 43/43, Phase 6: 29/29, Phase 7: 90/90, Phase 8: 61/61 (62 later), final audit: 89/89 (permission matrix, all 384 state-transition combinations, rules R1 to R11, a failed-commit rollback), UI redesign: 146/146.
+- **Automated tests: yes.** `tests/` holds **1,371 pytest tests in 17 modules** (1,370 pass, 1 is a documented known gap marked as an expected failure; about 65 seconds). Run `pip install -r requirements-dev.txt` then `python -m pytest`. Every test uses a temporary copy of a freshly seeded database and a temporary upload folder, never `instance/microloan.db` or `uploads/`. They cover the EMI maths, all 384 (from, to, actor) status combinations, every route against every role, rules R1 to R11, CSRF on all 11 POST routes, rollback when a commit fails and every fix of the first audit. A mutation check on a copy of the project broke the app in 14 ways and the suite caught all 14. Not tested automatically: the browser JavaScript and the layout (screenshots).
 - **Visual check:** 16 pages at 1360px and 4 at 390px were screenshotted with headless Edge and reviewed; two phone bugs were found and fixed (tracker overflow, clipped Pay button).
 - The 32 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0 (the 28 diagrams of `docs/` too).
-- `python app/services/emi.py` is the only self-test inside the repo.
+- `python app/services/emi.py` is a small extra self-test of the EMI maths.
 
 ### 11.1 Known issues found in the final audit (all six fixed in session 2, Part 2)
 
@@ -418,7 +418,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 
 1. ~~Which of the six known issues (11.1) to fix.~~ All six are fixed (session 2, Part 2).
 2. **Commit** the redesign (31 files) and the two documentation files? (Nothing has been committed since Phase 9.)
-3. Move the test scripts into the repo as `tests/` (pytest) so the testing slide can be reproduced.
+3. ~~Move the test scripts into the repo as `tests/` (pytest).~~ Done in session 2, Part 4 (`python -m pytest`).
 4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (31-slide plan, 32 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).
 5. Whether to ever deploy (the blueprint says local only; deployment is out of scope).
 6. Decide what to do with the extra demo data (the owner's own borrower account and LN-0008) the next time `seed.py` is run.

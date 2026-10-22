@@ -2835,15 +2835,15 @@ accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wirefr
 
 ### Slide 23. Testing and results
 
-- **Bullets:** Checks run during the build with the Flask test client and a temporary database: 27 (authentication), 52 (apply), 43 (officer), 29 (repayment), 90 (admin and seed), 61 (page crawl), 89 (final audit of the permission matrix, 384 state-machine combinations, rules and non-functional requirements), 146 (interface); all passed at the time they were run.
-- **Visual:** a results table, plus the transition test summary.
-- **Concepts:** *Black-box testing through HTTP*; *exhaustive transition testing*.
-- **Speaker notes:** Say plainly that these scripts were kept **outside the repository** and are recorded in `PROGRESS.md`; adding them as a `tests/` folder is a listed improvement. **[Not Verified by re-running from the repository]**
-- **Source:** `PROGRESS.md`; section 16 of this document.
+- **Bullets:** A pytest suite in `tests/`: **1,371 tests** in 17 modules (1370 pass, 1 known gap marked as an expected failure), about 65 seconds on a temporary database. It tries all **384** (from, to, actor) status combinations (397 tests in that module), 108 route-by-role checks, rules R1 to R11, CSRF on all 11 POST routes, and a failed commit for every service function. A mutation check: 14 of 14 deliberate breakages were caught. Earlier build-time checks (27, 52, 43, 29, 90, 61, 89, 146) are included.
+- **Visual:** the module table of section 16.5, plus the transition test summary.
+- **Concepts:** *Black-box testing through HTTP*; *exhaustive transition testing*; *mutation check*.
+- **Speaker notes:** Run `python -m pytest` live (it takes about a minute). Be open about what is not tested automatically: the browser JavaScript and the visual layout (checked by screenshots), and mention the one known gap shown as an expected failure and the two pages wider than a 390 px phone screen found during the screenshots.
+- **Source:** `tests/`; `PROGRESS.md`; section 16 of this document.
 
 ### Slide 24. Advantages and limitations
 
-- **Bullets (advantages):** all rules in one place; impossible status moves; automatic schedule; clear UI; no heavy dependencies. **(Limitations):** local only; float money; no email, no password reset, no pagination, no rate limiting; tests not in the repository; needs internet for CDN files.
+- **Bullets (advantages):** all rules in one place; impossible status moves; automatic schedule; clear UI; no heavy dependencies. **(Limitations):** local only; float money; no email, no password reset, no pagination, no rate limiting; two pages wider than a phone screen; needs internet for CDN files.
 - **Visual:** two columns.
 - **Concepts:** *Trade-offs*.
 - **Speaker notes:** Limitations that are deliberate (out of scope) versus missing: separate them.
@@ -2851,7 +2851,7 @@ accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wirefr
 
 ### Slide 25. Future enhancements (all **Suggested**, not implemented)
 
-- **Bullets:** automated tests in the repo; `Decimal` money; pagination; password reset by email and 2FA; real payment gateway (simulated now); partial and prepayments; late fees; deployment with a production server and HTTPS.
+- **Bullets:** `Decimal` money; pagination; password reset by email and 2FA; real payment gateway (simulated now); partial and prepayments; late fees; deployment with a production server and HTTPS.
 - **Visual:** a roadmap strip.
 - **Concepts:** *Incremental improvement*.
 - **Speaker notes:** Say which ones the blueprint excludes by design.
@@ -2880,16 +2880,18 @@ accounts, are in `docs/prototype/` (listed in `docs/README.md`). The grey wirefr
 
 | Item | Status |
 |---|---|
-| Automated test folder or test framework (pytest, unittest) | **None.** No test file is tracked by git **[Verified: `git ls-files`]** |
+| Automated test suite (pytest) | **Yes.** `tests/` holds **1,371 tests in 17 modules**: 1370 pass and 1 is a documented known gap marked as an expected failure. Run it with `pip install -r requirements-dev.txt` and `python -m pytest` (pytest is a development-only dependency, not in `requirements.txt`) **[Verified: run on 23 Oct 2026, about 65 seconds]** |
+| Safety of the tests | Every test builds the app on a temporary copy of a freshly seeded database with a temporary upload folder; a fixture refuses to run against `instance/microloan.db` or `uploads/` **[Verified by reading `tests/conftest.py`]** |
+| Do the tests catch mistakes? | A mutation check on a **copy** of the project broke the application in 14 deliberate ways (for example a forbidden status move allowed, CSRF switched off, upload content not checked, logout accepting GET) and the suite caught all 14 **[Verified]** |
 | Self-test of the EMI maths | **Yes.** `python app/services/emi.py` prints the EMI for ₹50,000, 12%, 12 months (expected 4442.44), a 0% case, the month-end rule and the schedule total (`emi.py:51-62`) |
 | Seed script as a manual test fixture | **Yes.** `python seed.py` loads a loan in every status except Disbursed |
 | Build log with the recorded checks | **Yes.** `PROGRESS.md` (plan, checks and decisions for every phase) |
 
 ### 16.2 Checks run during the build
 
-The checks used the Flask test client against a temporary database, with scripts that were kept **outside the repository**.
-The counts are those recorded in `PROGRESS.md`. All passed when they were run. **[Not Verified by re-running from the
-repository, because the scripts are not in it.]**
+Before the suite existed, scripts that were kept outside the repository checked each phase with the Flask test client against a
+temporary database. The counts below are those recorded in `PROGRESS.md` and are kept here as history; the checks are now part of
+`tests/` (and many more were added). The old scripts themselves are not in the repository.
 
 | Stage | What it covered | Checks passed |
 |---|---|---|
@@ -2905,7 +2907,7 @@ repository, because the scripts are not in it.]**
 Additional checks done by hand: screenshots of 16 pages at desktop width and 4 at phone width were reviewed in headless
 Edge; the page-render time of every page was below 2 seconds with the seed data (server-side, test client).
 
-### 16.3 Notable results to quote
+### 16.3 Notable results to quote (from the build-time checks, repeated by the suite)
 
 - **State machine:** 384 combinations tried; exactly the 7 allowed transitions (8 actor cases) succeeded; a rejected
   attempt never changed the status.
@@ -2923,13 +2925,34 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
   `decorators.py`, `emi.py`, `config.py` and `app/__init__.py` in full.
 - Every Mermaid block in section 14 was extracted and rendered in a browser: all **32** blocks rendered with no errors in both Mermaid 10.9.3 and Mermaid 11.4.0 (in headless Edge), and the rendered images were looked at for layout. Four diagram types (DFD Level 1, use cases, class diagram, activity diagrams) looked cluttered or too tall on the first render, so they were reworked and split into several smaller diagrams; that is why section 14 has two DFD Level 1 sheets, three use case diagrams, two class diagrams and compact left-to-right activity diagrams.
 
-### 16.5 Suggested test plan (**Suggested**, not implemented)
+### 16.5 What the pytest suite covers, and what it does not
 
-1. Add a `tests/` folder with `pytest` and the Flask test client (the scripts used during the build can be the starting point).
-2. Unit tests for `emi.py` (known EMIs, 0% rate, month ends, schedule total).
-3. State-machine test that loops over all (from, to, actor) pairs.
-4. Route tests for every row of the permission matrix.
-5. A test that a failed commit leaves no partial data.
+| Module (`tests/`) | Tests | What it checks (requirements) |
+|---|--:|---|
+| `test_emi.py` | 239 | EMI formula, rounding, affordability, month ends, schedule totals to the paisa (FR-15, FR-34, NFR-13) |
+| `test_state_machine.py` | 397 | all 384 (from, to, actor) combinations, the 7 transitions, rule R11, a full lifecycle (FR-29, NFR-09) |
+| `test_ui.py` | 119 | apply button states, one yellow action per page, badges, money and date formats, confirm dialogs, empty states, menus, contrast (FR-21, FR-39, FR-53 to FR-55, NFR-08, NFR-14) |
+| `test_permissions.py` | 108 | every route against every role, ownership, wrong HTTP methods (FR-08, FR-09, FR-33, NFR-02, NFR-03) |
+| `test_security.py` | 73 | CSRF on all 11 POST routes, rollback when a commit fails, 500/404 pages, XSS escaping, hostile search text (FR-56, NFR-04, NFR-10) |
+| `test_rules.py` | 58 | R1 to R4 and R6 through the apply form (FR-10 to FR-18, FR-44) |
+| `test_officer_flow.py` | 57 | list, filter, search, detail, pick up, approve, reject, disburse, dashboard (FR-22 to FR-28, FR-47) |
+| `test_admin.py` | 56 | users list and search, activate and deactivate, create officer, settings validation (FR-40 to FR-45) |
+| `test_auth.py` | 51 | register, login, logout as POST, duplicate emails, deactivation, password hashing, cookie flags (FR-01 to FR-07, NFR-01, NFR-06) |
+| `test_reassignment.py` | 43 | admin reassignment, who may do it, the form, the deactivation warning (FR-30 to FR-32) |
+| `test_uploads.py` | 38 | file type, content, size, safe storage, protected viewing (FR-17, FR-52, NFR-05) |
+| `test_architecture.py` | 36 | no commits or status changes in routes, docstrings, libraries, secrets (NFR-11) |
+| `test_repayment.py` | 28 | pay in order, Repaying, automatic Closed, overdue, the pay button, totals (FR-35 to FR-38) |
+| `test_performance.py` | 22 | every page under 2 seconds (NFR-07) |
+| `test_seed.py` | 21 | the demo accounts, loans in every status, one overdue installment (FR-45, FR-57) |
+| `test_reports.py` | 21 | totals, shares that add up to 100.0, bar chart months, overdue table (FR-48 to FR-51) |
+| `test_demo_flow.py` | 4 | the demo script of CLAUDE.md section 13, end to end, plus close, cancel and reject journeys |
+| **Total** | **1,371** | 1370 pass, 1 expected failure (a documented known gap) |
+
+**How it is built.** `tests/conftest.py` seeds one database per session with the functions of `seed.py` and gives every test its own copy, its own upload folder and a logged-in client for each demo role (the session is set directly, which keeps the suite fast; the real login route is tested in `test_auth.py`). Business rules are tested through the pages (what a user sees) and through the service functions (what the database holds).
+
+**Not covered by automated tests (checked by hand):** the browser JavaScript (the live EMI preview and the charts), the visual layout (screenshots in `docs/prototype/`), the width of the pages on a phone, truly simultaneous requests, and any deployment.
+
+**Known gap kept visible:** one test (`test_decorative_icons_are_hidden_from_screen_readers`) is marked as an expected failure because the shield icon in the utility bar of `base.html` lacks `aria-hidden="true"`; it turns into an error as soon as the attribute is added, as a reminder to remove the marker.
 
 ---
 
@@ -2964,7 +2987,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | Monthly income may have more than 2 decimals | Only the loan amount and the amount limits are checked for 2 decimals |
 | No rate limiting or account lockout | Not in the code |
 | No pagination | Lists load all matching rows |
-| No automated tests in the repository | See section 16 |
+| The tests do not run the browser | The JavaScript (live EMI preview, charts) and the visual layout are checked by hand and with screenshots (section 16.5) |
 | Two pages are wider than a 390 px phone screen | The Officer dashboard (594 px) and My loans (655 px): a visually hidden label inside the scrolling table is absolutely positioned and widens the page. Found while taking the prototype screenshots; not fixed (one CSS line would fix it) |
 | Tested on Windows only | Portability to Mac and Linux is claimed in the blueprint but was **Not Verified** |
 
@@ -2972,7 +2995,6 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 
 | Idea | Why |
 |---|---|
-| Add `tests/` with pytest | Repeatable proof of correctness |
 | Use `Decimal` or integer paise for money | Exact arithmetic |
 | Status-history table | Audit trail of who changed what and when |
 | Pagination and indexes on lists | Performance with many loans |
@@ -3127,14 +3149,15 @@ There is no row locking or version column. In normal use the second request sees
 with "cannot move from Under Review to Under Review". Truly simultaneous requests were **not tested** (**Not Verified**).
 
 **19. What are the limitations of your project?**
-Local only with a development server; floating-point money; no migrations; no automated tests in the repository; no password
+Local only with a development server; floating-point money; no migrations; no password
 reset, email or rate limiting; no history table of status changes. Several are
 out of scope by design (see `CLAUDE.md` section 1).
 
 **20. How did you test it?**
-During the build, scripts using the Flask test client on a temporary database checked each phase (27 to 146 checks per stage),
-and a final audit tried all 384 state-transition combinations and every permission-matrix row. The scripts are not in the
-repository yet; adding them as a `tests/` folder is the next step.
+A pytest suite in `tests/` (1,371 tests) runs on a temporary database with the Flask test client. It tries all 384 state-transition
+combinations, every route against every role, the business rules R1 to R11, CSRF on all 11 POST routes and a failed commit for every
+service function. A mutation check showed that it catches 14 of 14 deliberate breakages. The layout and the browser JavaScript are
+checked by hand with screenshots.
 
 ---
 
@@ -3169,7 +3192,7 @@ Tick each item before presenting.
 - [ ] Anything from the "Not Verified" list (Appendix F) is either left out or marked as such on the slide.
 - [ ] Future enhancements are labelled **future**, never shown as built.
 - [ ] The "existing system" slide is labelled as the team's framing.
-- [ ] The testing slide says the test scripts are outside the repository.
+- [ ] The testing slide quotes the real counts of the pytest suite; run `python -m pytest` again before the presentation.
 - [ ] Screenshots were taken from the current version of the site (yellow-and-blue theme).
 
 **Delivery**
@@ -3273,7 +3296,7 @@ Applied, Under Review, Approved, Repaying); the demo creates a Disbursed loan li
 | 2 | Team member names, guide name, date for the title slide | Not in the repository |
 | 3 | Any production deployment, HTTPS, hosting provider | The project is local only |
 | 4 | Behaviour under truly simultaneous requests (for example two officers picking up the same loan at once) | Not tested; no locking in the code |
-| 5 | Re-running the build-time test scripts | They are outside the repository |
+| 5 | The build-time test scripts of phases 2 to 9 | Replaced by the pytest suite; the old scripts are not in the repository |
 | 6 | Browsers other than Edge; operating systems other than Windows | Only Edge on Windows was used |
 | 7 | Performance with large data volumes | Only seed-size data was measured |
 | 8 | SQLite behaviour with foreign-key enforcement switched on | The code never switches it on |

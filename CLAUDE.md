@@ -60,6 +60,8 @@ python-dotenv>=1.0
 
 No other libraries without asking first.
 
+For development only, `requirements-dev.txt` adds `pytest` (the test suite in `tests/`); it is not part of `requirements.txt`.
+
 ---
 
 ## 3. Folder structure
@@ -69,6 +71,10 @@ micro-loan-system/
 ├── CLAUDE.md
 ├── README.md                 # how to install, run, seed, demo logins
 ├── requirements.txt
+├── requirements-dev.txt       # development only: adds pytest
+├── pytest.ini
+├── tests/                    # pytest suite (temporary database, never the live one)
+├── docs/                     # SE documents: SRS, diagrams, CRC cards, wireframes, prototype
 ├── .gitignore                # venv/, instance/, __pycache__/, uploads/, .env
 ├── .env.example              # SECRET_KEY=change-me
 ├── run.py                    # entry point: python run.py

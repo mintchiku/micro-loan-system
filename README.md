@@ -101,6 +101,21 @@ yourself in the demo script (step 3).
 6. Show the seeded **Repaying** loan with an overdue installment (log in as aman@example.com) and the **Closed**
    loan (sneha@example.com).
 
+## Run the tests
+
+The tests use pytest, which is a development-only dependency (it is not in `requirements.txt`). Every test works on a
+temporary copy of a freshly seeded database and a temporary upload folder, so your real data in `instance/` and `uploads/`
+is never touched. With the virtual environment active:
+
+```powershell
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+The suite has about 1,370 tests and takes about a minute. To run one area only, for example the state machine:
+`python -m pytest tests/test_state_machine.py`. One test is marked as an expected failure on purpose: it records a known
+accessibility gap (see `tests/test_ui.py`) and will turn into an error once the gap is fixed.
+
 ## Design
 
 A yellow-and-blue theme on Bootstrap 5, inspired by the layout patterns of modern bank websites (thin utility strip,
@@ -123,6 +138,9 @@ micro-loan-system/
 ├── README.md
 ├── docs/                     # SE documents: SRS, diagrams (PNG + SVG), CRC cards, wireframes, prototype screenshots
 ├── requirements.txt
+├── requirements-dev.txt       # adds pytest (development only)
+├── pytest.ini
+├── tests/                    # pytest suite: temporary database, one module per area
 ├── .env.example              # SECRET_KEY=change-me
 ├── run.py                    # entry point: python run.py
 ├── seed.py                   # resets the DB and loads demo data
