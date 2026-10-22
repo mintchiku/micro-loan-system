@@ -7,7 +7,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 |---|---|
 | 0. Kickoff | Done |
 | 1. Skeleton | Done |
-| 2. Auth | Not started |
+| 2. Auth | Done |
 | 3. Seed (users) | Not started |
 | 4. Apply | Not started |
 | 5. Officer | Not started |
@@ -93,3 +93,48 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 - Login/Register buttons use plain `/login` and `/register` links until Phase 2 adds the routes.
 - `Loan.total_payable()` = EMI × tenure (rule 5); `outstanding()` = sum of Pending installments,
   so it is 0 before disbursal.
+
+---
+
+## Phase 2 — Authentication & roles
+
+### Plan
+- `app/utils/validators.py`: CSRF token helpers (`get_csrf_token`, `csrf_token_is_valid`),
+  `to_float`/`to_int`, `validate_user_form()` (name, email, unique email, 10-digit phone,
+  income > 0, password ≥ 8 with letter + number, confirm match)
+- `app/utils/decorators.py`: `@role_required(*roles)` (login → else 403), `dashboard_url(user)`
+- `app/services/loan_service.py`: `create_user(values, password, role)` (one commit + rollback)
+- `app/routes/auth.py`: `/register` (always borrower, auto-login), `/login` (blocks deactivated
+  users), `/logout`
+- `app/routes/{borrower,officer,admin}.py`: placeholder `/dashboard` pages
+- `app/__init__.py`: global CSRF check on every POST, 403/404/500 handlers, login manager settings
+- Templates: `macros.html` (`input_field`, `csrf_field`), `auth/login.html`, `auth/register.html`,
+  three dashboards, `errors/403|404|500.html`, role-aware navbar in `base.html`
+
+### Verified (Flask test client, temp DB — 27/27 checks passed)
+- Register → redirected to `/borrower/dashboard` showing "Welcome, <name>"; email stored
+  lowercase; password stored as a hash; a posted `role=admin` is ignored.
+- Wrong password → "Invalid email or password"; duplicate email (any case) rejected; every
+  field error shown and entered values kept.
+- Borrower → `/admin/dashboard` and `/officer/dashboard` give the 403 page; officer/admin also get
+  403 on other roles' dashboards; logged-out `/borrower/dashboard` → redirect to `/login`.
+- Officer and admin log in and land on their own dashboards; deactivated user is refused.
+- POST without a CSRF token is refused; unknown URL shows the 404 page.
+- Live server (`python run.py`): `/`, `/login`, `/register` return 200; no server errors.
+
+### Temporary way to create an officer and an admin (before seed.py exists)
+Run in PowerShell from the project folder with the venv active:
+```powershell
+python -c "from app import create_app, db; from app.models import User; app = create_app(); ctx = app.app_context(); ctx.push(); [db.session.add(u) or u.set_password('Test@1234') for u in (User(name='Temp Officer', email='officer@test.com', phone='9000000001', role='officer'), User(name='Temp Admin', email='admin@test.com', phone='9000000002', role='admin'))]; db.session.commit(); print('created')"
+```
+Then log in as `officer@test.com` / `admin@test.com` with password `Test@1234`.
+(No code for this was added to the project; `seed.py` in Phase 3 replaces it.)
+
+### Decisions
+- CSRF: one random token per session (`secrets.token_hex`) put in every form by the
+  `csrf_field()` macro and checked in one `before_request` hook for all POSTs. A bad token
+  flashes "form expired" and goes back to the form page.
+- Login ignores `?next=` and always goes to the role dashboard (simple, no open-redirect risk).
+- The user loader returns nothing for a deactivated user, so they are logged out on their
+  next request too.
+- Forms use `novalidate` so the server-side field errors are what the user sees.

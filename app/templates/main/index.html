@@ -9,8 +9,12 @@
     Apply for a micro-loan online, track its review, and repay in easy monthly instalments.
   </p>
   <div class="d-flex gap-2 justify-content-center">
-    <a href="/register" class="btn btn-primary btn-lg">Register</a>
-    <a href="/login" class="btn btn-outline-primary btn-lg">Login</a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for(current_user.role ~ '.dashboard') }}" class="btn btn-primary btn-lg">Go to my dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Register</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">Login</a>
+    {% endif %}
   </div>
 </section>
 

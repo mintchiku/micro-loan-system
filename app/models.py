@@ -131,4 +131,6 @@ class LoanSetting(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     """Tell Flask-Login how to find the logged-in user from the session."""
-    return db.session.get(User, int(user_id))
+    user = db.session.get(User, int(user_id))
+    # a user deactivated by the admin is logged out on their next request
+    return user if user and user.is_active else None

@@ -1,0 +1,22 @@
+{# Reusable template pieces. Import with: {% import "macros.html" as m %} #}
+
+{# One form input with label, required marker, kept value and field-level error.
+   Extra HTML attributes (min, max, step, ...) can be passed as keyword arguments. #}
+{% macro input_field(name, label, values, errors, type="text", required=true, help=None) %}
+<div class="mb-3">
+  <label for="{{ name }}" class="form-label">
+    {{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}
+  </label>
+  <input type="{{ type }}" id="{{ name }}" name="{{ name }}"
+         class="form-control{% if errors.get(name) %} is-invalid{% endif %}"
+         value="{{ values.get(name, '') if type != 'password' else '' }}"
+         {% if required %}required{% endif %} {{ kwargs|xmlattr }}>
+  {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
+  {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# Hidden CSRF field; put inside every POST form #}
+{% macro csrf_field() %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}
