@@ -426,3 +426,24 @@ and use Claude Design. No routes, models or business rules changed.
 - **Yellow badge:** Disbursed and Repaying stay yellow (blueprint maps both to "warning"); they are soft pills, so they
   do not compete with the solid yellow buttons.
 - Spelling: "installment" everywhere, as in the blueprint.
+
+---
+
+# Session 2: review fixes, audit fixes, SE documentation, tests
+
+Authorised by the owner in one brief (Parts 0 to 5). Ground rules for the whole session: the live database
+(`instance/microloan.db`) and `uploads/` are never touched; every test and screenshot uses a temporary database
+(and a second server on port 5001 for screenshots); no new libraries in `requirements.txt` (pytest is dev-only, in
+`requirements-dev.txt`); business rules stay in `app/services/loan_service.py`.
+
+## Part 0: save the current work
+
+### Plan
+- Commit the uncommitted yellow-and-blue redesign exactly as it is (31 tracked files, including the CLAUDE.md 9a,
+  README and PROGRESS changes); leave `.agents/` and `skills-lock.json` out.
+- Second commit: add `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` and `PROJECT_HANDOFF_GIST.md`. The gist was checked:
+  its section 2.3 mentions "one extra borrower" without a name or email; the wording was made anonymous.
+
+### Done
+- Commit `0bde9f4` "UI redesign: yellow and blue theme" (31 files).
+- Commit "Add technical documentation and handoff gist" (this entry included).
