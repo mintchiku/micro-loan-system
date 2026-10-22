@@ -8,7 +8,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 | 0. Kickoff | Done |
 | 1. Skeleton | Done |
 | 2. Auth | Done |
-| 3. Seed (users) | Not started |
+| 3. Seed (users) | Done |
 | 4. Apply | Not started |
 | 5. Officer | Not started |
 | 6. Repay | Not started |
@@ -138,3 +138,23 @@ Then log in as `officer@test.com` / `admin@test.com` with password `Test@1234`.
 - The user loader returns nothing for a deactivated user, so they are logged out on their
   next request too.
 - Forms use `novalidate` so the server-side field errors are what the user sees.
+
+---
+
+## Phase 3 — Seed data (users only)
+
+### Plan
+- `seed.py`: `confirm_reset()` (y/n), `reset_database()` (drop + create + default LoanSetting),
+  `seed_users()` (7 users from §11, hashed passwords, borrower incomes ₹30k–₹80k),
+  empty `seed_loans()` marked for Phase 7, `print_summary()`; everything in one commit.
+- `README.md`: seed command + demo logins table.
+
+### Verified
+- `n` → "Cancelled. Nothing was changed."; `y` → database reset and the accounts table printed.
+- All 7 accounts log in through the login form and land on the correct dashboard.
+- Settings row = 12 %, ₹5,000–₹1,00,000, 3–24 months, 50 %.
+- No temporary test-login code existed in the project (the Phase 2 snippet lived only in this file).
+
+### Decisions
+- Borrower incomes: Aman ₹45,000, Sneha ₹60,000, Rohan ₹30,000, Kavya ₹80,000.
+- seed.py does not touch `uploads/` (never delete uploads); old files there simply become unused.
