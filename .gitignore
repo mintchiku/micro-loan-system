@@ -1,0 +1,15 @@
+# Python / virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Local data (database and uploaded files)
+instance/
+uploads/
+
+# Secrets
+.env
+
+# Prompt file and Claude Code tooling (not part of the project)
+PROMPTS.md
+.claude/

@@ -1,0 +1,10 @@
+/* Small custom styles on top of Bootstrap 5 */
+
+.hero {
+  background-color: #eef3ff;
+}
+
+.site-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}

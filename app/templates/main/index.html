@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<section class="hero text-center py-5 px-3 mb-5 rounded-3">
+  <i class="bi bi-cash-coin display-3 text-primary"></i>
+  <h1 class="display-5 fw-bold mt-2">Small loans, simple process</h1>
+  <p class="lead col-lg-8 mx-auto">
+    Apply for a micro-loan online, track its review, and repay in easy monthly instalments.
+  </p>
+  <div class="d-flex gap-2 justify-content-center">
+    <a href="/register" class="btn btn-primary btn-lg">Register</a>
+    <a href="/login" class="btn btn-outline-primary btn-lg">Login</a>
+  </div>
+</section>
+
+<h2 class="h4 text-center mb-4">How it works</h2>
+<div class="row g-4 mb-5 text-center">
+  <div class="col-md-4">
+    <i class="bi bi-pencil-square fs-1 text-primary"></i>
+    <h3 class="h5 mt-2">1. Apply</h3>
+    <p class="text-muted">Choose an amount and tenure, see your EMI instantly and upload one document.</p>
+  </div>
+  <div class="col-md-4">
+    <i class="bi bi-person-check fs-1 text-primary"></i>
+    <h3 class="h5 mt-2">2. Get approved</h3>
+    <p class="text-muted">A loan officer reviews your application and disburses the money.</p>
+  </div>
+  <div class="col-md-4">
+    <i class="bi bi-calendar-check fs-1 text-primary"></i>
+    <h3 class="h5 mt-2">3. Repay</h3>
+    <p class="text-muted">Pay your EMIs one by one from your dashboard until the loan is closed.</p>
+  </div>
+</div>
+{% endblock %}
