@@ -9,16 +9,19 @@ Software Engineering course project, NMIMS Hyderabad (B.Tech CS & Data Science).
 ## Features
 
 - Borrower self-registration; login / logout for all three roles; each role lands on its own dashboard
-- Loan application with live EMI preview and one supporting document (PDF / JPG / PNG, max 2 MB)
+- Loan application with live EMI preview and one supporting document (PDF / JPG / PNG, max 2 MB; the
+  file's content must match its type). Money amounts allow at most 2 decimal places
 - Business rules: amount and tenure limits, one active loan at a time, EMI-to-income affordability check,
   interest rate locked when the loan is applied for
 - Officer workflow: pick up, approve, reject (remarks required), disburse; only the officer who picked up
-  a loan can act on it
+  a loan can act on it. An admin can reassign an Under Review or Approved application to another
+  active officer (the status does not change)
 - EMI schedule generated at disbursal; pay installments in order; overdue detection; loan closes automatically
 - Admin: user list with filter and search, activate / deactivate, create officers, loan settings,
   dashboard totals, reports with Chart.js (pie chart, monthly bar chart, overdue table)
 - Security: hashed passwords, role checks on every protected route, ownership checks, CSRF token on every
-  POST form, protected document downloads
+  POST form (logout is a POST form too), `SameSite=Lax` and `HttpOnly` session cookie, protected document
+  downloads
 - Demo data with a loan in every status (`seed.py`)
 
 ## Tech stack

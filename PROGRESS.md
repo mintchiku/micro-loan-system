@@ -51,7 +51,7 @@ This file logs each phase: the plan, what was built, how it was checked, and any
 2. **`main.py` mentions an "about" page** but §8 (the page list) does not. → No about page;
    the landing page has a "How it works" section instead.
 3. **Logout is a GET** in §8 while "every state-changing action is a POST". → Follow the §8 table
-   (GET), since it is listed explicitly.
+   (GET), since it is listed explicitly. *(Changed in session 2, Part 2f: logout is now POST only.)*
 4. **Seed data and "every status"**: §11 lists 7 loans (no *Disbursed*). With 4 borrowers and the
    one-active-loan rule, only 4 active loans fit (Applied, Under Review, Approved, Repaying).
    → *Disbursed* is not seeded; it appears in the demo (step 3) right after disbursal.
@@ -373,7 +373,7 @@ a token does).
 3. **A deactivated officer's Under Review / Approved loans are stuck**: rule 11 means no other officer can act on them and there is no reassign feature (the blueprint has none). Suggest: warn on deactivation, or allow the admin to reassign.
 4. **Duplicate email race**: the unique check runs before the insert; two simultaneous registrations could hit the database `IntegrityError` and show the 500 page. Very unlikely in a demo.
 5. **Session cookie `SameSite` is not set** (Flask default None). CSRF tokens already protect the POST forms; adding `SESSION_COOKIE_SAMESITE = "Lax"` is a one-line hardening.
-6. `GET /logout` changes state (the blueprint's own §8 table specifies GET).
+6. `GET /logout` changes state (the blueprint's own §8 table specifies GET). *(All six items above were fixed in session 2, Part 2.)*
 
 ### Blueprint vs. code
 - Not in the blueprint but added (all small, needed): `app/templates/macros.html`, `app/utils/formatters.py` (the `inr` / `date` filters), `LoanError`, `STATUS_ORDER`, a 413 handler, `PROGRESS.md`.
@@ -479,3 +479,48 @@ Authorised by the owner in one brief (Parts 0 to 5). Ground rules for the whole 
 - `macros.html` now has 9 macros (new: `apply_button`). The technical documentation and gist are updated in Parts 3 and 5.
 - Not changed (not in the brief): the borrower menu link "Apply for loan" still opens the Apply page, which shows the
   warning when a loan is active. It is a plain menu link, not a yellow button.
+
+---
+
+## Part 2: fix the six known issues from the final audit
+
+### Plan
+- **2a decimals:** `validators.has_too_many_decimals()` (+ one shared message) used by `check_application` (amount) and
+  `validate_settings_form` (minimum and maximum amount). Error text: "Use at most 2 decimal places."
+- **2b upload content:** `check_document()` also reads the first bytes (`%PDF`, PNG `89 50 4E 47`, JPEG `FF D8 FF`),
+  requires the content type to match the extension, and rewinds the stream. No new library.
+- **2c reassignment:** `loan_service.reassign_loan(loan, new_officer, admin)` (+ `active_officers`,
+  `pending_loan_count`); route `POST /officer/applications/<id>/reassign` (admin only); a "Reassign to" form with a blue
+  outline button on the admin's read-only application page; the deactivation flash says how many loans need reassigning.
+  CLAUDE.md: permission matrix, routes table, transition notes.
+- **2d duplicate email:** `create_user()` catches `IntegrityError`, rolls back and returns `(None, {"email": ...})`;
+  `auth.register` and `admin.new_officer` re-show the form with the field error.
+- **2e cookies:** `config.py` sets `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` (commented).
+- **2f logout:** `/logout` becomes POST only; the navbar Logout is a small form with the CSRF token, styled like the
+  old link. CLAUDE.md section 8 and every document that says logout is GET are updated.
+
+### Verified (Part 2)
+Run with the Flask test client on a temporary database (seeded with `seed.py` functions in a scratch folder; the live
+`instance/microloan.db`, `uploads/` and the server on port 5000 were not touched). New script: **82/82 checks passed.**
+
+| Item | What was checked | Result |
+|---|---|---|
+| 2a | `10000.999` rejected on apply ("Use at most 2 decimal places."), typed value kept, nothing saved; `10000.99`, `10000.990` and `10000.5` accepted; settings min `5000.555` and max `100000.001` rejected, `5000.50` / `100000.25` saved | pass |
+| 2b | `.txt` renamed `.pdf` rejected; PNG renamed `.pdf` rejected; real PDF, PNG, JPG and JPEG accepted; `.exe`, empty file and a file over 2 MB still rejected; the saved file is byte-for-byte the upload (stream rewound); rejected files never saved | pass |
+| 2c | Admin reassigns Under Review and Approved loans; status unchanged; officers, borrowers and anonymous users refused (403 / login); no CSRF token changes nothing; Applied, Disbursed, Repaying, Closed, Rejected and Cancelled loans refused and show no form; same officer, borrower, admin, empty and unknown ids refused; unknown loan 404; the old officer can no longer approve, the new officer can approve and later disburse; dropdown excludes the current and deactivated officers; button is blue outline (no enabled yellow button); confirm() and CSRF in the form; deactivating an officer shows the warning with the right count (singular and plural) and a plain success message when there are none | pass |
+| 2d | `create_user` returns the field error and leaves one user; the register and create-officer routes (validator bypassed to force the race) re-show the form with the error and kept values, HTTP 200, no 500, nobody logged in | pass |
+| 2e | `Set-Cookie` of the session contains `SameSite=Lax` and `HttpOnly` | pass |
+| 2f | Navbar has a POST form with the CSRF token and no logout link; `GET /logout` is 405 and keeps the session; POST without a token does not log out; POST with the token logs out; works for borrower, officer and admin | pass |
+
+Older scripts rerun after updating them for the intended changes (logout is POST, uploads need real file signatures,
+the admin page now has the reassign form): phase 2 27/27, phase 4 52/52, phase 5 43/43, phase 6 29/29, phase 7 90/90,
+phase 8 62/62, UI 146/146, final audit 89/89, Part 1 28/28.
+
+### Notes (Part 2)
+- Documents updated in the same part: CLAUDE.md (permission matrix row, route 4 now POST, new route 14a, reassignment note
+  under the transition table, rules 1, 10 and 11, confirm list), README.md (features), PROJECT_HANDOFF_GIST.md (route count
+  22, logout, reassign, rules, known issues marked fixed) and WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md (route table now
+  22 rows, logout, reassign, cookie flags, uploads, limitations). The `file:line` references in the technical document are
+  regenerated in Part 3.
+- Monthly income is not checked for decimals (not part of the brief). Suggestion for later: apply the same rule.
+- Route 14a keeps its letter so the page numbers used by the wireframes list in CLAUDE.md section 14 stay valid.

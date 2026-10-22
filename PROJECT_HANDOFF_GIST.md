@@ -104,7 +104,7 @@ see the **Apply form** use a borrower with no active loan: **Sneha is blocked (L
 without asking** (owner rule).
 
 Size: about 1,400 lines of Python in 18 files, 20 templates (about 1,700 lines), about 400 lines of CSS, about 100 lines of JS.
-21 HTTP routes, 5 tables, 3 roles, 8 loan statuses.
+22 HTTP routes, 5 tables, 3 roles, 8 loan statuses.
 
 ---
 
@@ -147,6 +147,7 @@ micro-loan-system/
 | Pick up an application | no | yes (any officer) | no |
 | Approve / reject (remarks required) / disburse | no | **only the officer who picked it up** | no |
 | View a document | owner only | yes | yes |
+| Reassign an application (Under Review / Approved) to another active officer | no | no | yes |
 | Create officers, activate/deactivate users, change loan settings, reports | no | no | yes |
 
 Admins are created only by `seed.py`. Wrong role gives a 403 page; another borrower's loan or document gives 404.
@@ -191,8 +192,8 @@ status changes. Anything else raises `LoanError` (a clear message shown to the u
 | R7 | Schedule is created only at disbursal; installment *i* is due on the disbursal day plus *i* months (month-end safe: 31 Jan + 1 month = 28 Feb) |
 | R8 | Only the earliest Pending installment can be paid |
 | R9 | Overdue = Pending and past due; red badge; no late fee |
-| R10 | One document per application; PDF/JPG/PNG; at most 2 MB; renamed with a uuid; stored in `uploads/`, served only via `/documents/<id>` |
-| R11 | After pick-up only the assigned officer can approve, reject or disburse (enforced in `change_status`) |
+| R10 | One document per application; PDF/JPG/PNG; at most 2 MB; renamed with a uuid; the file's first bytes must match its type; stored in `uploads/`, served only via `/documents/<id>` |
+| R11 | After pick-up only the assigned officer can approve, reject or disburse (enforced in `change_status`). An admin can reassign an Under Review / Approved loan to another active officer (`reassign_loan`); the status does not change |
 
 Every service function that writes does **one** `db.session.commit()` inside `try/except` with rollback (disbursal saves the status and
 all installments together).
@@ -210,13 +211,13 @@ service function -> commit -> `flash()` -> redirect (Post/Redirect/Get) -> the G
 Routes **do not return JSON**. Chart data is placed in the page with `|tojson`. The only client-side logic is the live EMI preview, a "busy"
 state on submit buttons, and Chart.js.
 
-### 8.1 The 21 routes
+### 8.1 The 22 routes
 
 | URL | Methods | Access | Notes |
 |---|---|---|---|
 | `/` | GET | public | landing page; limits and example EMI come from live settings |
 | `/register`, `/login` | GET, POST | public | logged-in users are redirected to their dashboard |
-| `/logout` | GET | login | (GET, as the blueprint lists it) |
+| `/logout` | POST | login | CSRF token required; the navbar Logout is a small form (a plain GET gives 405) |
 | `/documents/<id>` | GET | borrower (owner), officer, admin | sends the file from `uploads/` |
 | `/borrower/dashboard` | GET | borrower | |
 | `/borrower/apply` | GET, POST | borrower | form + live EMI preview |
@@ -228,6 +229,7 @@ state on submit buttons, and Chart.js.
 | `/officer/applications` | GET | officer, admin | filter tabs + search (`?status=&q=`) |
 | `/officer/applications/<id>` | GET | officer, admin | admin sees it read-only |
 | `/officer/applications/<id>/<action>` | POST | officer | action is `pickup`, `approve`, `reject` or `disburse` |
+| `/officer/applications/<id>/reassign` | POST | admin | form field `officer_id`; only Under Review / Approved; status unchanged |
 | `/admin/dashboard`, `/admin/users`, `/admin/reports` | GET | admin | users has `?role=&q=` |
 | `/admin/users/new-officer` | GET, POST | admin | |
 | `/admin/users/<id>/toggle` | POST | admin | cannot deactivate yourself |
@@ -312,14 +314,14 @@ Passwords: salted scrypt hash. CSRF: random per-session token on every POST form
 - The 29 Mermaid diagrams in the technical document were rendered and checked in Mermaid 10.9.3 and 11.4.0.
 - `python app/services/emi.py` is the only self-test inside the repo.
 
-### 11.1 Known issues (found in the final audit; the owner has **not** yet chosen which to fix)
+### 11.1 Known issues found in the final audit (all six fixed in session 2, Part 2)
 
-1. Amounts with more than 2 decimals are accepted (10000.999 is stored as typed).
-2. Uploaded files are checked by extension and size only, not by content.
-3. A deactivated officer's Under Review / Approved loans are stuck (no reassignment feature).
-4. Two simultaneous sign-ups with the same email could show the 500 page (unique index raises after the pre-check).
-5. Session cookie `SameSite` is not set (one-line hardening: `SESSION_COOKIE_SAMESITE = "Lax"`).
-6. `GET /logout` changes state (the blueprint lists it as GET).
+1. ~~Amounts with more than 2 decimals are accepted.~~ **Fixed:** apply form and loan settings reject them ("Use at most 2 decimal places.").
+2. ~~Uploaded files are checked by extension and size only.~~ **Fixed:** the first bytes must match PDF / PNG / JPEG (`check_document`).
+3. ~~A deactivated officer's loans are stuck.~~ **Fixed:** admin reassignment (`reassign_loan`), plus a warning with the count when such an officer is deactivated.
+4. ~~Two simultaneous sign-ups with the same email could show the 500 page.~~ **Fixed:** `create_user` catches `IntegrityError` and returns the same form error.
+5. ~~Session cookie `SameSite` is not set.~~ **Fixed:** `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` in `config.py`.
+6. ~~`GET /logout` changes state.~~ **Fixed:** logout is POST only, with the CSRF token.
 
 ---
 
@@ -413,7 +415,7 @@ Headless Edge works without extra installs: `"C:\Program Files (x86)\Microsoft\E
 
 ## 16. Open items and decisions waiting for the owner
 
-1. Which of the **six known issues** (11.1) to fix.
+1. ~~Which of the six known issues (11.1) to fix.~~ All six are fixed (session 2, Part 2).
 2. **Commit** the redesign (31 files) and the two documentation files? (Nothing has been committed since Phase 9.)
 3. Move the test scripts into the repo as `tests/` (pytest) so the testing slide can be reproduced.
 4. Presentation: use `WEBSITE_COMPLETE_TECHNICAL_DOCUMENTATION.md` (27-slide plan, 29 diagrams, 20 viva questions) to build the PowerPoint; fill in team and guide names (not in the repo).

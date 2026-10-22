@@ -2,6 +2,7 @@
 import math
 import re
 import secrets
+from decimal import Decimal, InvalidOperation
 
 from flask import session
 
@@ -9,6 +10,9 @@ from app.models import User
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")  # something@something.something
 PHONE_RE = re.compile(r"^\d{10}$")  # exactly 10 digits
+
+DECIMALS_MESSAGE = "Use at most 2 decimal places."  # money has paise: two digits after the point
+EMAIL_TAKEN_MESSAGE = "This email is already registered."
 
 
 # ---------- CSRF (one random token per session, checked on every POST) ----------
@@ -36,6 +40,15 @@ def to_float(text):
     except (TypeError, ValueError):
         return None
     return number if math.isfinite(number) else None  # reject "nan" and "inf"
+
+
+def has_too_many_decimals(value, places=2):
+    """True if a number (or the text typed for it) has more than `places` digits after the decimal point."""
+    try:
+        number = Decimal(str(value).strip()).normalize()  # normalize drops trailing zeros: 10.50 is fine
+    except InvalidOperation:
+        return False  # not a number at all; the caller reports that separately
+    return number.is_finite() and number.as_tuple().exponent < -places
 
 
 def to_int(text):
@@ -69,8 +82,12 @@ def validate_settings_form(form):
 
     if numbers["min_amount"] is None or numbers["min_amount"] <= 0:
         errors["min_amount"] = "Minimum amount must be a number greater than 0."
+    elif has_too_many_decimals(values["min_amount"]):
+        errors["min_amount"] = DECIMALS_MESSAGE
     if numbers["max_amount"] is None or numbers["max_amount"] <= 0:
         errors["max_amount"] = "Maximum amount must be a number greater than 0."
+    elif has_too_many_decimals(values["max_amount"]):
+        errors["max_amount"] = DECIMALS_MESSAGE
     elif "min_amount" not in errors and numbers["max_amount"] <= numbers["min_amount"]:
         errors["max_amount"] = "Maximum amount must be greater than the minimum amount."
 
@@ -109,7 +126,7 @@ def validate_user_form(form, with_income=True):
     if not EMAIL_RE.match(values["email"]) or len(values["email"]) > 120:
         errors["email"] = "Enter a valid email address."
     elif User.query.filter_by(email=values["email"]).first():
-        errors["email"] = "This email is already registered."
+        errors["email"] = EMAIL_TAKEN_MESSAGE
 
     if not PHONE_RE.match(values["phone"]):
         errors["phone"] = "Phone must be exactly 10 digits."

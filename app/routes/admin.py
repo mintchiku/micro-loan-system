@@ -47,9 +47,10 @@ def new_officer():
     if request.method == "POST":
         values, errors = validate_user_form(request.form, with_income=False)
         if not errors:
-            officer = loan_service.create_user(values, request.form["password"], role="officer")
-            flash(f"Officer account created for {officer.name}.", "success")
-            return redirect(url_for("admin.users", role="officer"))
+            officer, errors = loan_service.create_user(values, request.form["password"], role="officer")
+            if officer:
+                flash(f"Officer account created for {officer.name}.", "success")
+                return redirect(url_for("admin.users", role="officer"))
     return render_template("admin/new_officer.html", values=values, errors=errors)
 
 
@@ -60,7 +61,14 @@ def toggle_user(user_id):
     user = db.get_or_404(User, user_id)
     try:
         loan_service.toggle_user_active(user, current_user)
-        flash(f"{user.name} is now {'active' if user.is_active else 'deactivated'}.", "success")
+        message = f"{user.name} is now {'active' if user.is_active else 'deactivated'}."
+        stuck = loan_service.pending_loan_count(user) if user.role == "officer" and not user.is_active else 0
+        if stuck:  # a deactivated officer's loans cannot move until an admin reassigns them
+            flash(f"{message} They still hold {stuck} loan{'s' if stuck != 1 else ''} that "
+                  f"{'needs' if stuck == 1 else 'need'} reassigning: open each application and choose another officer.",
+                  "warning")
+        else:
+            flash(message, "success")
     except LoanError as error:
         flash(str(error), "danger")
     return redirect(url_for("admin.users"))

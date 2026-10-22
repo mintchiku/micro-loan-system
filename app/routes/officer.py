@@ -3,10 +3,11 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user
 
 from app import db
-from app.models import Loan
+from app.models import Loan, User
 from app.services import loan_service
 from app.services.loan_service import LoanError
 from app.utils.decorators import role_required
+from app.utils.validators import to_int
 
 officer_bp = Blueprint("officer", __name__)
 
@@ -40,7 +41,27 @@ def applications():
 def application_detail(loan_id):
     """Borrower + loan details, document, history, actions and (after disbursal) the schedule."""
     loan = db.get_or_404(Loan, loan_id)
-    return render_template("officer/application_detail.html", loan=loan, settings=loan_service.get_settings())
+    # only the admin sees the "Reassign to" form, and only for loans an officer is still working on
+    can_reassign = current_user.role == "admin" and loan.status in loan_service.REASSIGNABLE_STATUSES
+    officers = loan_service.active_officers(exclude_id=loan.officer_id) if can_reassign else []
+    return render_template("officer/application_detail.html", loan=loan, settings=loan_service.get_settings(),
+                           can_reassign=can_reassign, officers=officers)
+
+
+@officer_bp.route("/applications/<int:loan_id>/reassign", methods=["POST"])
+@role_required("admin")  # the URL sits under /officer, but only an admin may reassign
+def reassign_application(loan_id):
+    """Admin hands an application to another active officer; the status does not change."""
+    loan = db.get_or_404(Loan, loan_id)
+    officer_id = to_int(request.form.get("officer_id"))
+    new_officer = db.session.get(User, officer_id) if officer_id else None
+    old_name = loan.officer.name if loan.officer else "nobody"
+    try:
+        loan_service.reassign_loan(loan, new_officer, current_user)
+        flash(f"{loan.display_id()} reassigned from {old_name} to {new_officer.name}.", "success")
+    except LoanError as error:
+        flash(str(error), "danger")
+    return redirect(url_for("officer.application_detail", loan_id=loan.id))
 
 
 @officer_bp.route("/applications/<int:loan_id>/<action>", methods=["POST"])

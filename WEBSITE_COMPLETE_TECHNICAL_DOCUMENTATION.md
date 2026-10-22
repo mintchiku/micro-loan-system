@@ -43,7 +43,7 @@ Software Engineering course project, NMIMS Hyderabad (B.Tech CS & Data Science)
 | Source analysed | The working tree of the project folder. Last commit `051bbbc` ("Phase 9: final audit report"). **31 files have uncommitted changes**: the yellow-and-blue UI redesign. This document describes the working tree, including that redesign. Two untracked tooling items (`.agents/`, `skills-lock.json`) are not part of the application. |
 | Code size | About 1,436 lines of Python, 1,706 lines of HTML templates, 386 lines of CSS, 99 lines of JavaScript |
 | Python modules | 18 `.py` files, 20 HTML templates, 1 CSS file, 1 JS file |
-| HTTP routes | 21 (plus Flask's built-in `static` route) |
+| HTTP routes | 22 (plus Flask's built-in `static` route) |
 | Database tables | 5 (`user`, `loan`, `repayment`, `document`, `loan_setting`) |
 | Roles | 3 (`borrower`, `officer`, `admin`) |
 | Line numbers | Written as `file.py:123`. They match the working tree on the analysis date and may shift after edits. |
@@ -442,6 +442,7 @@ user sees; the HTML attributes (`required`, `type`, `maxlength`, `pattern`, `min
 | Apply for loan | `POST /borrower/apply` (multipart) | amount, tenure_months, purpose, document | `check_application` (`loan_service.py:135`): no active loan; amount within limits; tenure within limits and whole; purpose required and at most 200; document present, type, size; EMI within affordability limit |
 | Review decision | `POST /officer/applications/<id>/approve` or `/reject` | remarks (textarea, at most 300) | Reject requires remarks; both limit length |
 | Pick up / Disburse | `POST .../pickup`, `.../disburse` | none | State machine and ownership rules |
+| Reassign (admin) | `POST /officer/applications/<id>/reassign` | officer_id (dropdown) | `reassign_loan`: admin only; loan Under Review or Approved; new officer active, an officer, and not the current one |
 | Pay | `POST /borrower/loans/<id>/pay` | repayment_id (hidden) | Must be the earliest Pending installment |
 | Cancel | `POST /borrower/loans/<id>/cancel` | none | Only the owner, only while Applied |
 | Create officer | `POST /admin/users/new-officer` | name, email, phone, password, confirm_password | Same as register, without income |
@@ -502,7 +503,7 @@ two-line card so the Pay button never leaves the screen.
 | `officer` | `/officer` | `app/routes/officer.py` | 4 |
 | `admin` | `/admin` | `app/routes/admin.py` | 6 |
 
-### 6.3 Complete route table (21 routes)
+### 6.3 Complete route table (22 routes)
 
 "Access" is enforced by the decorator on the view. `role(...)` means `@role_required(...)`.
 
@@ -512,7 +513,7 @@ two-line card so the Pay button never leaves the screen.
 | 2 | `/documents/<id>` | GET | `main.view_document` (`main.py:22`) | role(borrower, officer, admin); a borrower must own the loan, else 404 | none (reads `Document`) | The file from `uploads/` |
 | 3 | `/register` | GET, POST | `auth.register` (`auth.py:14`) | public (logged-in users are redirected) | `create_user` | Form, or redirect to borrower dashboard |
 | 4 | `/login` | GET, POST | `auth.login` (`auth.py:31`) | public (logged-in users are redirected) | none (queries `User`) | Form, or redirect to the role's dashboard |
-| 5 | `/logout` | GET | `auth.logout` (`auth.py:53`) | login required | none | Redirect to `/` |
+| 5 | `/logout` | POST | `auth.logout` (`auth.py:54`) | login required; CSRF token (a GET gives 405) | none | Redirect to `/` |
 | 6 | `/borrower/dashboard` | GET | `borrower.dashboard` (`borrower.py:25`) | role(borrower) | `borrower_summary` | HTML |
 | 7 | `/borrower/apply` | GET, POST | `borrower.apply` (`borrower.py:33`) | role(borrower) | `get_settings`, `apply_for_loan` | Form, or redirect to the new loan |
 | 8 | `/borrower/loans` | GET | `borrower.loans` (`borrower.py:56`) | role(borrower) | none (queries `Loan`) | HTML |
@@ -523,12 +524,13 @@ two-line card so the Pay button never leaves the screen.
 | 13 | `/officer/applications` | GET | `officer.applications` (`officer.py:27`) | role(officer, admin) | `search_loans` | HTML |
 | 14 | `/officer/applications/<id>` | GET | `officer.application_detail` (`officer.py:40`) | role(officer, admin) | `get_settings` | HTML (admin sees it read-only) |
 | 15 | `/officer/applications/<id>/<action>` | POST | `officer.application_action` (`officer.py:48`) | role(officer) only | `pick_up_loan`, `approve_loan`, `reject_loan`, `disburse_loan` | Redirect to the application page; unknown action gives 404 |
-| 16 | `/admin/dashboard` | GET | `admin.dashboard` (`admin.py:26`) | role(admin) | `admin_totals` | HTML |
-| 17 | `/admin/users` | GET | `admin.users` (`admin.py:33`) | role(admin) | `search_users` | HTML |
-| 18 | `/admin/users/new-officer` | GET, POST | `admin.new_officer` (`admin.py:44`) | role(admin) | `create_user` | Form, or redirect to the officer list |
-| 19 | `/admin/users/<id>/toggle` | POST | `admin.toggle_user` (`admin.py:58`) | role(admin) | `toggle_user_active` | Redirect to the user list |
-| 20 | `/admin/settings` | GET, POST | `admin.settings` (`admin.py:71`) | role(admin) | `get_settings`, `update_settings` | Form, or redirect to itself |
-| 21 | `/admin/reports` | GET | `admin.reports` (`admin.py:89`) | role(admin) | `admin_totals`, `disbursed_per_month`, `overdue_installments` | HTML with chart data |
+| 16 | `/officer/applications/<id>/reassign` | POST | `officer.reassign_application` (`officer.py:53`) | role(admin) only | `reassign_loan` | Redirect to the application page (status unchanged) |
+| 17 | `/admin/dashboard` | GET | `admin.dashboard` (`admin.py:26`) | role(admin) | `admin_totals` | HTML |
+| 18 | `/admin/users` | GET | `admin.users` (`admin.py:33`) | role(admin) | `search_users` | HTML |
+| 19 | `/admin/users/new-officer` | GET, POST | `admin.new_officer` (`admin.py:44`) | role(admin) | `create_user` | Form, or redirect to the officer list |
+| 20 | `/admin/users/<id>/toggle` | POST | `admin.toggle_user` (`admin.py:58`) | role(admin) | `toggle_user_active` | Redirect to the user list |
+| 21 | `/admin/settings` | GET, POST | `admin.settings` (`admin.py:71`) | role(admin) | `get_settings`, `update_settings` | Form, or redirect to itself |
+| 22 | `/admin/reports` | GET | `admin.reports` (`admin.py:89`) | role(admin) | `admin_totals`, `disbursed_per_month`, `overdue_installments` | HTML with chart data |
 
 **Note on "API":** none of these routes returns JSON. The words "API" in the presentation should be read as
 "HTTP routes". **[Verified]**
@@ -747,8 +749,8 @@ document, which is consistent with one extra borrower account and one applicatio
 | R7 | Schedule created only at disbursal; installment *i* due on disbursal date plus *i* months (month-end safe) | `disburse_loan` (`loan_service.py:286`), `add_months` (`emi.py:27`) |
 | R8 | Only the earliest Pending installment can be paid | `pay_installment` (`loan_service.py:309`) |
 | R9 | Overdue = Pending and past due date; computed; no late fee | `Repayment.is_overdue` (`models.py:103`) |
-| R10 | One document per application; PDF, JPG or PNG; at most 2 MB; renamed with a uuid | `check_document` (`loan_service.py:104`), `apply_for_loan` |
-| R11 | After pick-up, only the assigned officer can approve, reject or disburse | `change_status` (`loan_service.py:50-52`) |
+| R10 | One document per application; PDF, JPG or PNG; at most 2 MB; the first bytes must match the type; renamed with a uuid | `check_document` (`loan_service.py:110`), `apply_for_loan` |
+| R11 | After pick-up, only the assigned officer can approve, reject or disburse; an admin can reassign an Under Review or Approved loan to another active officer (status unchanged) | `change_status` (`loan_service.py:50-52`), `reassign_loan` (`loan_service.py:343`) |
 
 ### 8.2 The loan state machine
 
@@ -771,6 +773,11 @@ exactly these 7 transitions (8 actor cases) were accepted.
 
 `change_status` itself only assigns `loan.status`; the caller sets dates and ids and performs the single commit. This is
 why every transition goes through one function and one commit.
+
+**Reassignment is not a transition.** `reassign_loan(loan, new_officer, admin)` (`loan_service.py:343`) lets an admin move an
+*Under Review* or *Approved* loan to another active officer. Only `officer_id` changes, the status stays, and the change is one
+commit with rollback. Rule R11 then applies to the new officer (the old one is refused). Deactivating an officer who still holds
+such loans shows a warning with the count.
 
 ### 8.3 EMI mathematics
 
@@ -850,8 +857,9 @@ the data exchanged, the result, and the source files. All entries are **[Verifie
 
 ### F4. Logout
 
-`GET /logout` (`auth.logout`, `auth.py:53`, `@login_required`): `logout_user()`, flash "You have been logged out.",
-redirect to `/`. It is a GET request because the blueprint's page table lists it that way. No database access.
+`POST /logout` (`auth.logout`, `auth.py:54`, `@login_required`): `logout_user()`, flash "You have been logged out.",
+redirect to `/`. It is POST only and carries the CSRF token (the navbar Logout button is a small form), so a link or image
+cannot log someone out; a plain GET gives 405. No database access.
 
 ### F5. Role-based dashboards
 
@@ -1068,10 +1076,10 @@ repaid" banner and apply again if needed.
 | CSRF | One random token per session (`secrets.token_hex(16)`), embedded in every POST form, checked for every POST in a `before_request` hook with a constant-time comparison | `validators.py:16,23`, `__init__.py:71` | Hand-written (no library). During the audit, token-less POSTs to every POST route in all three roles changed nothing in the database |
 | XSS | Jinja2 auto-escaping on all output; chart data inserted with `|tojson` | all templates | Tested: a `<script>` tag in the purpose field is shown as text |
 | SQL injection | SQLAlchemy ORM with bound parameters; search uses `ilike` with a bound value | `loan_service.py` | No raw SQL anywhere **[Verified by reading]** |
-| File uploads | Extension whitelist, size limit (2 MB, plus a 3 MB request cap), uuid file name, stored outside `static/`, served only through a protected route | `check_document`, `apply_for_loan`, `main.view_document` | Content is not scanned; a text file renamed `.pdf` would be accepted |
+| File uploads | Extension whitelist, size limit (2 MB, plus a 3 MB request cap), the first bytes must match PDF / PNG / JPEG, uuid file name, stored outside `static/`, served only through a protected route | `check_document`, `apply_for_loan`, `main.view_document` | Content is not scanned; a text file renamed `.pdf` would be accepted |
 | Open redirects | Login ignores `?next=`; a failed CSRF check redirects only to a URL on the same host | `auth.login`, `check_csrf` | |
 | Secrets | `SECRET_KEY` read from `.env` (ignored by git); a development default exists if `.env` is missing | `config.py:14` | Set a real value in `.env` before any real use |
-| Session cookie flags | Flask defaults: `HttpOnly` on; `SameSite` not set; `Secure` off | not configured | **Suggested:** set `SESSION_COOKIE_SAMESITE = "Lax"` |
+| Session cookie flags | `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True`; `Secure` off (plain HTTP locally) | `config.py` | `Secure` would be turned on with HTTPS **[Not Verified for any deployment]** |
 | Transport | Plain HTTP on `127.0.0.1` | `run.py` | No HTTPS configuration **[Not Verified for any deployment]** |
 | Debug mode | `app.run(debug=True)` | `run.py:8` | For local use only |
 
@@ -1512,7 +1520,7 @@ flowchart LR
 ### 14.7 Use case diagrams
 
 **Purpose:** actors and what they can do. **Slide:** 15. Derived from the permission matrix (`CLAUDE.md` section 4) and the
-21 routes. One diagram per actor keeps each one readable on a slide; the actors **Loan Officer** and **Admin** share
+22 routes. One diagram per actor keeps each one readable on a slide; the actors **Loan Officer** and **Admin** share
 the use cases *Login and logout*, *View dashboard* and *View document*, and the borrower diagram also shows the secondary
 actor **System**.
 
@@ -2217,7 +2225,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 
 ### Slide 2. Introduction
 
-- **Bullets:** A Flask web application; three roles (borrower, loan officer, admin); simulated payments; 21 pages and actions; SQLite database; runs locally.
+- **Bullets:** A Flask web application; three roles (borrower, loan officer, admin); simulated payments; 22 pages and actions; SQLite database; runs locally.
 - **Visual:** three role icons around a loan icon, or the landing page "How it works" section.
 - **Concepts:** *Micro-loan* = a small loan (here ₹5,000 to ₹1,00,000 by default). *EMI* = equated monthly installment.
 - **Speaker notes:** Introduce the three roles and say that no real money moves; the Pay button simulates payment.
@@ -2380,7 +2388,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 
 ### Slide 21. Backend and "API" working
 
-- **Bullets:** 21 HTTP routes in 5 blueprints; no JSON API (pages are rendered on the server); every POST passes the CSRF hook and a role check; Post/Redirect/Get; one service call per route.
+- **Bullets:** 22 HTTP routes in 5 blueprints; no JSON API (pages are rendered on the server); every POST passes the CSRF hook and a role check; Post/Redirect/Get; one service call per route.
 - **Visual:** the route table from 6.3 (condensed) and the request-life steps (3.5).
 - **Concepts:** *Blueprint*, *decorator*, *flash message*, *HTTP status codes* (302, 403, 404, 413, 500).
 - **Speaker notes:** Pick `POST /borrower/loans/<id>/pay` and walk the nine steps of section 3.5.
@@ -2412,7 +2420,7 @@ source references. Placeholders in square brackets (team names, guide name) are 
 
 ### Slide 25. Future enhancements (all **Suggested**, not implemented)
 
-- **Bullets:** automated tests in the repo; `Decimal` money; pagination; password reset by email and 2FA; real payment gateway (simulated now); partial and prepayments; officer reassignment (a deactivated officer's loans are stuck); late fees; deployment with a production server and HTTPS.
+- **Bullets:** automated tests in the repo; `Decimal` money; pagination; password reset by email and 2FA; real payment gateway (simulated now); partial and prepayments; late fees; deployment with a production server and HTTPS.
 - **Visual:** a roadmap strip.
 - **Concepts:** *Incremental improvement*.
 - **Speaker notes:** Say which ones the blueprint excludes by design.
@@ -2522,12 +2530,7 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | SQLite foreign keys not enforced | No `PRAGMA foreign_keys=ON` in the code |
 | "One document per loan" is a code rule, not a database constraint | `Document.loan_id` is not unique |
 | No history of status changes | Only the current status, `officer_id`, `reviewed_on`, `remarks` and dates are stored; there is no audit table |
-| A deactivated officer's loans cannot be reassigned | Rule R11 plus no reassign feature (the blueprint has none) |
-| Upload content is not inspected | Only extension and size are checked |
-| Amounts with more than 2 decimals are accepted | e.g. 10000.999 is stored as typed (the EMI is rounded) |
-| Possible 500 page on two simultaneous sign-ups with the same email | The uniqueness check runs before the insert; the database unique index then raises an error |
-| `GET /logout` changes state | As listed in the blueprint page table |
-| Session cookie `SameSite` not set | Flask default |
+| Monthly income may have more than 2 decimals | Only the loan amount and the amount limits are checked for 2 decimals |
 | No rate limiting or account lockout | Not in the code |
 | No pagination | Lists load all matching rows |
 | No automated tests in the repository | See section 16 |
@@ -2540,7 +2543,6 @@ Edge; the page-render time of every page was below 2 seconds with the seed data 
 | Add `tests/` with pytest | Repeatable proof of correctness |
 | Use `Decimal` or integer paise for money | Exact arithmetic |
 | Status-history table | Audit trail of who changed what and when |
-| Officer reassignment by the admin | Unblock loans of a deactivated officer |
 | Pagination and indexes on lists | Performance with many loans |
 | Email notifications, password reset, 2FA | Out of scope of the course project; common real-world needs |
 | Real payment gateway | Payments are simulated now |
@@ -2663,8 +2665,8 @@ browser can be bypassed, so the server repeats every check in `check_application
 
 **16. Why are state-changing actions POST requests, and what is Post/Redirect/Get?**
 POST requests change data and carry the CSRF token, so a link cannot trigger them. After a successful POST the server
-redirects to a GET page, so refreshing does not repeat the action. (The one exception, logout, is a GET as listed in the
-blueprint.)
+redirects to a GET page, so refreshing does not repeat the action. Logout is a POST too (a small form in the navbar), so a
+link cannot log anyone out.
 
 **17. Explain your database design.**
 Five tables. `user` holds all roles. `loan` links to `user` twice (borrower and optional officer). `repayment` has one row per
@@ -2677,7 +2679,7 @@ with "cannot move from Under Review to Under Review". Truly simultaneous request
 
 **19. What are the limitations of your project?**
 Local only with a development server; floating-point money; no migrations; no automated tests in the repository; no password
-reset, email or rate limiting; no reassignment for a deactivated officer; no history table of status changes. Several are
+reset, email or rate limiting; no history table of status changes. Several are
 out of scope by design (see `CLAUDE.md` section 1).
 
 **20. How did you test it?**
@@ -2693,7 +2695,7 @@ Tick each item before presenting.
 
 **Facts and numbers**
 
-- [ ] Slides say **three roles**, **five tables**, **21 routes**, **eight statuses** (Applied, Under Review, Approved, Disbursed, Repaying, Closed, Rejected, Cancelled).
+- [ ] Slides say **three roles**, **five tables**, **22 routes**, **eight statuses** (Applied, Under Review, Approved, Disbursed, Repaying, Closed, Rejected, Cancelled).
 - [ ] Default limits quoted as ₹5,000 to ₹1,00,000, 3 to 24 months, 12% a year, EMI limit 50% of income, and described as **admin-changeable**.
 - [ ] The example EMI is ₹4,442.44 for ₹50,000, 12 months, 12% (total ₹53,309.28).
 - [ ] The slide on "API" says there is **no JSON API**; it speaks of HTTP routes.
@@ -2757,7 +2759,7 @@ Line numbers from the working tree on 23 Oct 2026.
 - **Roles (3):** `borrower`, `officer`, `admin`.
 - **Loan statuses (8):** Applied, Under Review, Approved, Disbursed, Repaying, Closed, Rejected, Cancelled.
 - **Installment statuses (2):** Pending, Paid (Overdue is computed).
-- **Routes (21):** the table in section 6.3.
+- **Routes (22):** the table in section 6.3.
 - **Blueprints (5):** main, auth, borrower, officer, admin.
 - **Templates (20):** the table in section 5.1.
 - **Macros (8):** `csrf_field`, `input_field`, `status_badge`, `breadcrumb`, `empty_state`, `progress_bar`, `loan_stepper`, `schedule_table` (plus `nav_item` in `base.html`).

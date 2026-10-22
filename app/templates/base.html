@@ -71,7 +71,11 @@
               <span class="avatar" aria-hidden="true">{{ ((name_parts[0][0] ~ (name_parts[-1][0] if name_parts|length > 1 else ''))|upper) if name_parts else '?' }}</span>
               <span class="who"><strong>{{ current_user.name }}</strong><span>{{ 'Loan officer' if current_user.role == 'officer' else current_user.role }}</span></span>
             </div>
-            <a class="btn btn-outline-primary" href="{{ url_for('auth.logout') }}">Logout</a>
+            {# logout changes state, so it is a POST form (with the CSRF token) that looks like the old link #}
+            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline-primary">Logout</button>
+            </form>
           {% elif ep == 'auth.login' %}
             <a class="btn btn-link" href="{{ url_for('auth.register') }}">Register</a>
           {% elif ep == 'auth.register' %}

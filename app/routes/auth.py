@@ -20,10 +20,11 @@ def register():
     if request.method == "POST":
         values, errors = validate_user_form(request.form, with_income=True)
         if not errors:
-            user = loan_service.create_user(values, request.form["password"], role="borrower")
-            login_user(user)
-            flash(f"Welcome, {user.name}! Your account has been created.", "success")
-            return redirect(url_for("borrower.dashboard"))
+            user, errors = loan_service.create_user(values, request.form["password"], role="borrower")
+            if user:  # on a failure (for example a duplicate email) the form is shown again with the message
+                login_user(user)
+                flash(f"Welcome, {user.name}! Your account has been created.", "success")
+                return redirect(url_for("borrower.dashboard"))
     return render_template("auth/register.html", values=values, errors=errors)
 
 
@@ -48,7 +49,7 @@ def login():
     return render_template("auth/login.html", email=email, error=error)
 
 
-@auth_bp.route("/logout")
+@auth_bp.route("/logout", methods=["POST"])  # POST only: a link or an image tag cannot log someone out
 @login_required
 def logout():
     """Log out and go back to the landing page."""

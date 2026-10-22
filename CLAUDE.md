@@ -129,6 +129,7 @@ All business rules and status changes live in `services/loan_service.py`.
 | Pick up application for review | ❌ | ✅ | ❌ |
 | Approve / reject (with remarks) | ❌ | ✅ (own reviews) | ❌ |
 | Disburse approved loan | ❌ | ✅ (own reviews) | ❌ |
+| Reassign application (Under Review / Approved) to another active officer | ❌ | ❌ | ✅ |
 | View uploaded document | owner | ✅ | ✅ |
 | Create officer, activate/deactivate users | ❌ | ❌ | ✅ |
 | Change loan settings | ❌ | ❌ | ✅ |
@@ -161,7 +162,7 @@ Relationships: borrower → many `Loan` (as borrower), officer → many `Loan` (
 |---|---|---|
 | id | int PK | shown to users as `LN-0001` |
 | borrower_id | FK User | |
-| officer_id | FK User, nullable | set when an officer picks it up |
+| officer_id | FK User, nullable | set when an officer picks it up; an admin can change it (reassignment) |
 | amount | float | principal in ₹ |
 | tenure_months | int | |
 | interest_rate | float | annual %, **copied from settings at apply time** |
@@ -260,11 +261,18 @@ Final states: **Cancelled, Rejected, Closed**.
 Implement as a dict `ALLOWED_TRANSITIONS` and one function `change_status(loan, new_status, actor)`
 that checks the table and raises a clear error otherwise.
 
+**Reassignment is not a transition.** An admin can hand a loan that is *Under Review* or *Approved*
+to a different active officer with `reassign_loan(loan, new_officer, admin)`. Only `officer_id` changes;
+the status stays the same, so the table above is untouched. It is refused for every other status, for
+the officer who already holds the loan, and for inactive or non-officer accounts. When an admin
+deactivates an officer who still holds such loans, the page warns how many need reassigning.
+
 ---
 
 ## 7. Business rules
 
-1. **Amount** must be between `min_amount` and `max_amount`.
+1. **Amount** must be between `min_amount` and `max_amount`, with at most 2 decimal places
+   (the same limit applies to the minimum and maximum amount in the loan settings).
 2. **Tenure** must be between `min_tenure` and `max_tenure` (whole months).
 3. **One active loan at a time.** A borrower with any loan in Applied / Under Review /
    Approved / Disbursed / Repaying cannot apply again.
@@ -280,8 +288,11 @@ that checks the table and raises a clear error otherwise.
 8. **Payments in order:** only the earliest Pending installment can be paid.
 9. **Overdue** = Pending and past due date. Shown with a red badge. No late fee (out of scope).
 10. **Documents:** one file per application, PDF/JPG/PNG only, max 2 MB, renamed with uuid.
+    The first bytes of the file must match its type (`%PDF`, PNG signature, JPEG signature),
+    so a text file renamed to `.pdf` is rejected.
 11. **Officer ownership:** once an officer picks up an application, only that officer can
-    approve, reject or disburse it.
+    approve, reject or disburse it. The only way to change the owner is an **admin
+    reassignment** (see the note under the transition table); the new officer then owns it.
 
 ---
 
@@ -292,7 +303,7 @@ that checks the table and raises a clear error otherwise.
 | 1 | Landing page | `/` | GET | public |
 | 2 | Register (borrower) | `/register` | GET/POST | public |
 | 3 | Login | `/login` | GET/POST | public |
-| 4 | Logout | `/logout` | GET | logged in |
+| 4 | Logout (small form in the navbar, CSRF token) | `/logout` | POST | logged in |
 | 5 | Borrower dashboard | `/borrower/dashboard` | GET | borrower |
 | 6 | Apply for loan (live EMI preview) | `/borrower/apply` | GET/POST | borrower |
 | 7 | My loans | `/borrower/loans` | GET | borrower |
@@ -303,6 +314,7 @@ that checks the table and raises a clear error otherwise.
 | 12 | Applications list (filter by status) | `/officer/applications` | GET | officer |
 | 13 | Application detail | `/officer/applications/<id>` | GET | officer |
 | 14 | Pick up / approve / reject / disburse | `/officer/applications/<id>/<action>` | POST | officer |
+| 14a | Reassign application to another active officer (status unchanged) | `/officer/applications/<id>/reassign` | POST | admin |
 | 15 | Admin dashboard | `/admin/dashboard` | GET | admin |
 | 16 | Manage users | `/admin/users` | GET | admin |
 | 17 | Create officer | `/admin/users/new-officer` | GET/POST | admin |
@@ -312,7 +324,8 @@ that checks the table and raises a clear error otherwise.
 | 21 | View document | `/documents/<id>` | GET | owner / officer / admin |
 | 22 | Error pages | 403, 404, 500 | — | — |
 
-Every state-changing action is a **POST** (never a GET link).
+Every state-changing action is a **POST** (never a GET link), including logout.
+Row 14a keeps its letter so the page numbers used elsewhere (wireframes, §14) stay the same.
 
 ### Dashboard contents
 - **Borrower:** active loan card (status badge, amount, EMI, next due date, outstanding),
@@ -338,7 +351,7 @@ Every state-changing action is a **POST** (never a GET link).
 - Money formatted in Indian style: `₹1,00,000.00` (write a Jinja filter `inr`).
 - Dates shown as `22 Oct 2026`.
 - Every form shows field-level errors and keeps entered values on error.
-- Confirm dialogs (`confirm()`) before cancel, reject, disburse, pay.
+- Confirm dialogs (`confirm()`) before cancel, reject, disburse, pay, reassign.
 - Mobile-friendly via Bootstrap grid; tables wrapped in `.table-responsive`.
 - Empty states: friendly message instead of an empty table.
 

@@ -5,12 +5,14 @@ import uuid
 from datetime import date, datetime
 
 from flask import current_app
+from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
 from app import db
 from app.models import ACTIVE_STATUSES, Document, Loan, LoanSetting, Repayment, User
 from app.services.emi import add_months, build_schedule, calculate_emi, max_affordable_amount
 from app.utils.formatters import inr
+from app.utils.validators import DECIMALS_MESSAGE, EMAIL_TAKEN_MESSAGE, has_too_many_decimals
 
 # All loan statuses in lifecycle order (used for reports)
 STATUS_ORDER = ["Applied", "Under Review", "Approved", "Disbursed", "Repaying", "Closed", "Rejected", "Cancelled"]
@@ -80,7 +82,7 @@ def get_active_loan(borrower):
 # ---------- Users ----------
 
 def create_user(values, password, role):
-    """Create and save a new borrower (self-registration) or officer (created by admin)."""
+    """Create and save a new borrower or officer. Returns (user, errors); errors holds a field message on failure."""
     user = User(
         name=values["name"],
         email=values["email"],
@@ -93,10 +95,14 @@ def create_user(values, password, role):
     try:
         db.session.add(user)
         db.session.commit()
+    except IntegrityError:
+        # The only unique column is the email: another request saved the same email a moment ago
+        db.session.rollback()
+        return None, {"email": EMAIL_TAKEN_MESSAGE}
     except Exception:
         db.session.rollback()
         raise
-    return user
+    return user, {}
 
 
 # ---------- Applying for a loan (rules 1, 2, 3, 4, 6, 10) ----------
@@ -115,6 +121,23 @@ def check_document(file):
         return "The file is empty."
     if size > MAX_DOCUMENT_BYTES:
         return "The file is larger than 2 MB."
+    header = file.stream.read(8)  # the first bytes tell what the file really is
+    file.stream.seek(0)  # rewind again so the file can still be saved
+    detected = detect_file_type(header)
+    expected = ".jpg" if extension == ".jpeg" else extension
+    if detected is None or detected != expected:
+        return "The file content is not a real PDF, JPG or PNG that matches its name."
+    return None
+
+
+def detect_file_type(header):
+    """Return ".pdf", ".png" or ".jpg" from the first bytes of a file, or None if it is none of them."""
+    if header.startswith(b"%PDF"):
+        return ".pdf"
+    if header.startswith(b"\x89PNG"):  # bytes 89 50 4E 47
+        return ".png"
+    if header.startswith(b"\xff\xd8\xff"):  # bytes FF D8 FF
+        return ".jpg"
     return None
 
 
@@ -141,6 +164,8 @@ def check_application(borrower, amount, tenure, purpose, file, settings):
     errors = {}
     if amount is None:
         errors["amount"] = "Enter the loan amount."
+    elif has_too_many_decimals(amount):  # money has paise: at most 2 decimals
+        errors["amount"] = DECIMALS_MESSAGE
     elif not settings.min_amount <= amount <= settings.max_amount:  # rule 1
         errors["amount"] = f"Amount must be between {inr(settings.min_amount)} and {inr(settings.max_amount)}."
 
@@ -292,6 +317,42 @@ def disburse_loan(loan, officer):
             loan.repayments.append(Repayment(installment_no=row["installment_no"], due_date=row["due_date"],
                                              amount=row["amount"], status="Pending"))
         db.session.commit()  # status change and all installments are saved together
+    except Exception:
+        db.session.rollback()
+        raise
+
+
+# ---------- Admin: reassigning an application to another officer ----------
+
+REASSIGNABLE_STATUSES = ("Under Review", "Approved")  # the statuses where an officer still has work to do
+
+
+def active_officers(exclude_id=None):
+    """Active officer accounts, A to Z, for the reassign dropdown (optionally without one officer)."""
+    query = User.query.filter_by(role="officer", is_active=True)
+    if exclude_id:
+        query = query.filter(User.id != exclude_id)
+    return query.order_by(User.name).all()
+
+
+def pending_loan_count(officer):
+    """How many loans of this officer are still Under Review or Approved (they need an officer to act)."""
+    return Loan.query.filter(Loan.officer_id == officer.id, Loan.status.in_(REASSIGNABLE_STATUSES)).count()
+
+
+def reassign_loan(loan, new_officer, admin):
+    """Admin hands an Under Review or Approved loan to another active officer. The status does not change."""
+    if admin.role != "admin":
+        raise LoanError("Only an admin can reassign an application.")
+    if loan.status not in REASSIGNABLE_STATUSES:
+        raise LoanError(f"{loan.display_id()} is {loan.status}. Only loans that are Under Review or Approved can be reassigned.")
+    if new_officer is None or new_officer.role != "officer" or not new_officer.is_active:
+        raise LoanError("Choose an active loan officer.")
+    if new_officer.id == loan.officer_id:
+        raise LoanError(f"{loan.display_id()} is already assigned to {new_officer.name}.")
+    try:
+        loan.officer_id = new_officer.id  # rule 11 now applies to the new officer
+        db.session.commit()
     except Exception:
         db.session.rollback()
         raise

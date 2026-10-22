@@ -139,6 +139,33 @@
         {% endif %}
       {% endif %}
 
+      {% if can_reassign %}
+      <section class="card shadow-sm"><div class="card-body">
+        <h2 class="h5">Reassign application</h2>
+        <p class="text-muted small">
+          Now with <strong class="text-body">{{ loan.officer.name }}</strong>{% if not loan.officer.is_active %} (deactivated){% endif %}.
+          Pick another active officer; the status stays <em>{{ loan.status }}</em>.
+        </p>
+        {% if officers %}
+        <form method="post" action="{{ url_for('officer.reassign_application', loan_id=loan.id) }}"
+              onsubmit="return confirm('Reassign {{ loan.display_id() }} to ' + this.officer_id.selectedOptions[0].text + '?');">
+          {{ m.csrf_field() }}
+          <label for="officer_id" class="form-label">Reassign to</label>
+          <select id="officer_id" name="officer_id" class="form-select mb-3" required>
+            <option value="" disabled selected>Select an officer</option>
+            {% for officer in officers %}<option value="{{ officer.id }}">{{ officer.name }}</option>{% endfor %}
+          </select>
+          <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Reassign</button>
+        </form>
+        {% else %}
+          <div class="alert alert-secondary mb-0" role="status">
+            <i class="bi bi-info-circle-fill alert-icon" aria-hidden="true"></i>
+            <div class="alert-body">No other active officer is available. Create an officer first.</div>
+          </div>
+        {% endif %}
+      </div></section>
+      {% endif %}
+
       <section class="card">
         <div class="card-body">
           <h2 class="h5 mb-3">Status history</h2>

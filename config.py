@@ -20,5 +20,11 @@ class Config:
     # Uploaded loan documents live outside static/ so they are not publicly reachable
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
+    # SameSite=Lax: the browser does not send the session cookie with cross-site POST requests (extra CSRF defence).
+    SESSION_COOKIE_SAMESITE = "Lax"
+    # HttpOnly: JavaScript cannot read the session cookie, which limits the damage of a script-injection bug.
+    # (Secure is left off because the local development server uses plain http.)
+    SESSION_COOKIE_HTTPONLY = True
+
     # Hard cap for a whole request (file + form fields). The 2 MB file rule is checked in code.
     MAX_CONTENT_LENGTH = 3 * 1024 * 1024
