@@ -13,3 +13,6 @@ uploads/
 # Prompt file and Claude Code tooling (not part of the project)
 PROMPTS.md
 .claude/
+
+.agents/
+skills-lock.json
