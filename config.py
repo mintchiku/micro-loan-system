@@ -10,10 +10,12 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))  # reads SECRET_KEY from .env if the
 class Config:
     """Settings used by create_app()."""
 
-    # Safe default for local development only; set a real value in .env
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
+    # The secret must come from .env (or the environment). Only with FLASK_DEBUG=1 is a throw-away dev key allowed.
+    SECRET_KEY = os.environ.get("SECRET_KEY") or ("dev-only-change-me" if os.environ.get("FLASK_DEBUG") == "1" else None)
+    if not SECRET_KEY:
+        raise RuntimeError("SECRET_KEY is missing: create a .env file next to config.py (see .env.example)")
 
-    # SQLite database file inside the instance/ folder
+    # SQLite database file inside the instance/ folder (absolute: works from any start directory)
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, "instance", "microloan.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -32,7 +32,7 @@ Repayments are tracked through an auto-generated EMI schedule. Payments are **si
 - Real payments, KYC APIs, credit bureau checks, SMS/email sending
 - Password reset by email, OTP, 2FA
 - REST API / mobile app / React frontend
-- Deployment to the cloud (local run is enough)
+- Deployment anywhere except PythonAnywhere (local run is enough; PythonAnywhere is allowed, see `DEPLOY.md`)
 - Partial payments, prepayment, loan restructuring, multiple currencies
 
 ---

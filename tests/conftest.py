@@ -12,6 +12,8 @@ import pytest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+os.environ.setdefault("SECRET_KEY", "test-secret-key")  # config.py refuses to load without one
+
 import seed  # noqa: E402  (the demo-data functions are reused to build the test database)
 import support  # noqa: E402
 from app import create_app, db  # noqa: E402
