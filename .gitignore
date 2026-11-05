@@ -16,3 +16,4 @@ PROMPTS.md
 
 .agents/
 skills-lock.json
+.vscode/
